@@ -2,4 +2,29 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    
+    <!-- Primary Colors -->
+    <color name="primary_blue">#0A84FF</color>
+    <color name="primary_green">#34C759</color>
+    <color name="primary_orange">#FF9500</color>
+    
+    <!-- Background Colors -->
+    <color name="background_light">#F2F2F7</color>
+    <color name="card_background">#FFFFFF</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#000000</color>
+    <color name="text_secondary">#8E8E93</color>
+    <color name="text_tertiary">#C7C7CC</color>
+    
+    <!-- Chart Colors -->
+    <color name="chart_protein">#0A84FF</color>
+    <color name="chart_fat">#FF9500</color>
+    <color name="chart_carb">#34C759</color>
+    
+    <!-- Water Color -->
+    <color name="water_blue">#5AC8FA</color>
+    
+    <!-- Success Color -->
+    <color name="success_green">#34C759</color>
 </resources>

@@ -1,3 +1,42 @@
 <resources>
     <string name="app_name">AI_DIET_APP</string>
+    
+    <!-- Main Screen -->
+    <string name="today">오늘</string>
+    <string name="no_record_title">기록이 없어요</string>
+    <string name="no_record_message">%s에는 식사 기록이 없습니다</string>
+    <string name="add_photo">사진으로 추가하기</string>
+    
+    <!-- Nutrition Info -->
+    <string name="total_intake">총 섭취</string>
+    <string name="kcal">kcal</string>
+    <string name="goal_percent">목표의 %d%%</string>
+    <string name="achieved">달성</string>
+    
+    <!-- Macros -->
+    <string name="carb">탄수화물</string>
+    <string name="protein">단백질</string>
+    <string name="fat">지방</string>
+    <string name="gram">%dg</string>
+    
+    <!-- Buttons -->
+    <string name="add_photo_btn">사진 추가</string>
+    <string name="text_input">텍스트 입력</string>
+    <string name="total_analysis">종합 분석</string>
+    
+    <!-- Water -->
+    <string name="water_intake">물 섭취량</string>
+    <string name="water_count">%d / %d 잔</string>
+    
+    <!-- Meals -->
+    <string name="meals">식사</string>
+    <string name="breakfast">아침</string>
+    <string name="lunch">점심</string>
+    <string name="dinner">저녁</string>
+    
+    <!-- Navigation -->
+    <string name="nav_home">홈</string>
+    <string name="nav_challenge">챌린지</string>
+    <string name="nav_analysis">분석</string>
+    <string name="nav_profile">프로필</string>
 </resources>
