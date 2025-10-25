@@ -34,6 +34,9 @@ public class MainActivity extends AppCompatActivity {
     // 데이터 상태 (테스트용)
     private boolean hasData = false; // 기본값: 빈 상태
 
+    // 날짜 관리
+    private Calendar selectedDate;
+
     // 이미지 선택을 위한 ActivityResultLauncher
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
@@ -53,10 +56,13 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        selectedDate = Calendar.getInstance(); // 오늘 날짜로 초기화
+
         setupImagePicker();
         setupFoodAnalysisLauncher();
         initViews();
         setupListeners();
+        setupDateClickListeners();
         updateUI();
     }
 
@@ -110,11 +116,13 @@ public class MainActivity extends AppCompatActivity {
         ImageButton btnNextDay = findViewById(R.id.btnNextDay);
         
         btnPrevDay.setOnClickListener(v -> {
-            Toast.makeText(this, "이전 날짜", Toast.LENGTH_SHORT).show();
+            selectedDate.add(Calendar.DAY_OF_MONTH, -1);
+            updateUI();
         });
-        
+
         btnNextDay.setOnClickListener(v -> {
-            Toast.makeText(this, "다음 날짜", Toast.LENGTH_SHORT).show();
+            selectedDate.add(Calendar.DAY_OF_MONTH, 1);
+            updateUI();
         });
         
         // 사진 추가 버튼 (빈 상태)
@@ -166,23 +174,37 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void updateUI() {
+        // 날짜 표시 업데이트
+        updateDateDisplay();
+
         // 데이터 유무에 따라 UI 전환
         if (hasData) {
             // 데이터가 있을 때
             emptyStateLayout.setVisibility(View.GONE);
             dataStateLayout.setVisibility(View.VISIBLE);
-            tvDate.setText("10월 2일 목요일");
         } else {
             // 데이터가 없을 때
             emptyStateLayout.setVisibility(View.VISIBLE);
             dataStateLayout.setVisibility(View.GONE);
-            tvDate.setText("오늘");
 
-            // 빈 상태 메시지에 오늘 날짜 표시
-            String formattedDate = getCurrentDateString();
+            // 빈 상태 메시지에 선택된 날짜 표시
+            String formattedDate = getFormattedDate(selectedDate);
             String message = getString(R.string.no_record_message, formattedDate);
             tvEmptyMessage.setText(message);
         }
+    }
+
+    private void updateDateDisplay() {
+        if (isToday(selectedDate)) {
+            tvDate.setText("오늘");
+        } else {
+            tvDate.setText(getFormattedDate(selectedDate));
+        }
+    }
+
+    private String getFormattedDate(Calendar calendar) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("M월 d일 EEEE", Locale.KOREAN);
+        return dateFormat.format(calendar.getTime());
     }
 
     private String getCurrentDateString() {
@@ -208,5 +230,38 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("food_text", foodText);
         intent.putExtra("meal_time", mealTime);
         foodAnalysisLauncher.launch(intent);
+    }
+
+    private void setupDateClickListeners() {
+        // 날짜 텍스트 길게 누르면 달력 표시
+        tvDate.setOnLongClickListener(v -> {
+            showCalendarDialog();
+            return true;
+        });
+
+        // 날짜 텍스트 클릭 시 오늘로 이동
+        tvDate.setOnClickListener(v -> {
+            if (!isToday(selectedDate)) {
+                selectedDate = Calendar.getInstance();
+                updateUI();
+                Toast.makeText(this, "오늘 날짜로 이동했습니다", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void showCalendarDialog() {
+        CalendarDialog calendarDialog = new CalendarDialog();
+        calendarDialog.setOnDateSelectedListener(selectedDate -> {
+            this.selectedDate = (Calendar) selectedDate.clone();
+            updateUI();
+        });
+        calendarDialog.show(getSupportFragmentManager(), "CalendarDialog");
+    }
+
+    private boolean isToday(Calendar date) {
+        Calendar today = Calendar.getInstance();
+        return date.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
+                date.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
+                date.get(Calendar.DAY_OF_MONTH) == today.get(Calendar.DAY_OF_MONTH);
     }
 }

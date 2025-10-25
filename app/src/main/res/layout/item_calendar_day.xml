@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="8dp">
+
+    <!-- 날짜 텍스트 -->
+    <TextView
+        android:id="@+id/tvDay"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:gravity="center"
+        android:textSize="16sp"
+        android:textColor="@android:color/black" />
+
+    <!-- 기록 있음 표시 (파란 점) -->
+    <View
+        android:id="@+id/vRecordIndicator"
+        android:layout_width="4dp"
+        android:layout_height="4dp"
+        android:layout_marginTop="2dp"
+        android:background="@drawable/bg_record_dot"
+        android:visibility="gone" />
+
+</LinearLayout>
