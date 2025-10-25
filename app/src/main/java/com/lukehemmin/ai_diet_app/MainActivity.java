@@ -30,6 +30,9 @@ public class MainActivity extends AppCompatActivity {
     private CardView emptyStateLayout;
     private LinearLayout dataStateLayout;
     private Button btnAddPhotoEmpty, btnAddTextEmpty, btnAddPhoto;
+    private ImageButton btnCalendar;
+    private NutritionCircleView nutritionCircle;
+    private LinearLayout waterDropsContainer, mealsContainer;
 
     // 데이터 상태 (테스트용)
     private boolean hasData = false; // 기본값: 빈 상태
@@ -108,6 +111,10 @@ public class MainActivity extends AppCompatActivity {
         btnAddPhotoEmpty = findViewById(R.id.btnAddPhotoEmpty);
         btnAddTextEmpty = findViewById(R.id.btnAddTextEmpty);
         btnAddPhoto = findViewById(R.id.btnAddPhoto);
+        btnCalendar = findViewById(R.id.btnCalendar);
+        nutritionCircle = findViewById(R.id.nutritionCircle);
+        waterDropsContainer = findViewById(R.id.waterDropsContainer);
+        mealsContainer = findViewById(R.id.mealsContainer);
     }
     
     private void setupListeners() {
@@ -138,21 +145,12 @@ public class MainActivity extends AppCompatActivity {
         if (btnAddPhoto != null) {
             btnAddPhoto.setOnClickListener(v -> openImagePicker());
         }
-        
-        // 텍스트 입력 버튼 (데이터 상태)
-        Button btnTextInput = findViewById(R.id.btnTextInput);
-        if (btnTextInput != null) {
-            btnTextInput.setOnClickListener(v -> {
-                TextInputBottomSheet bottomSheet = new TextInputBottomSheet();
-                bottomSheet.show(getSupportFragmentManager(), "TextInputBottomSheet");
-            });
-        }
-        
-        // 종합 분석 버튼
-        Button btnAnalysis = findViewById(R.id.btnAnalysis);
-        if (btnAnalysis != null) {
-            btnAnalysis.setOnClickListener(v -> {
-                Toast.makeText(this, "종합 분석", Toast.LENGTH_SHORT).show();
+
+        // 운동 추천 버튼
+        Button btnExercise = findViewById(R.id.btnExercise);
+        if (btnExercise != null) {
+            btnExercise.setOnClickListener(v -> {
+                Toast.makeText(this, "운동 추천 기능 준비 중", Toast.LENGTH_SHORT).show();
             });
         }
         
@@ -182,6 +180,7 @@ public class MainActivity extends AppCompatActivity {
             // 데이터가 있을 때
             emptyStateLayout.setVisibility(View.GONE);
             dataStateLayout.setVisibility(View.VISIBLE);
+            setupDataStateUI();
         } else {
             // 데이터가 없을 때
             emptyStateLayout.setVisibility(View.VISIBLE);
@@ -233,11 +232,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupDateClickListeners() {
-        // 날짜 텍스트 길게 누르면 달력 표시
-        tvDate.setOnLongClickListener(v -> {
-            showCalendarDialog();
-            return true;
-        });
+        // 달력 버튼 클릭 시 달력 표시
+        if (btnCalendar != null) {
+            btnCalendar.setOnClickListener(v -> showCalendarDialog());
+        }
 
         // 날짜 텍스트 클릭 시 오늘로 이동
         tvDate.setOnClickListener(v -> {
@@ -263,5 +261,69 @@ public class MainActivity extends AppCompatActivity {
         return date.get(Calendar.YEAR) == today.get(Calendar.YEAR) &&
                 date.get(Calendar.MONTH) == today.get(Calendar.MONTH) &&
                 date.get(Calendar.DAY_OF_MONTH) == today.get(Calendar.DAY_OF_MONTH);
+    }
+
+    private void setupDataStateUI() {
+        if (!hasData || nutritionCircle == null) return;
+
+        // 원형 게이지 설정 (테스트 데이터)
+        nutritionCircle.setNutritionData(195f, 95f, 62f);
+
+        // 물방울 생성
+        setupWaterDrops(8, 8);
+
+        // 식사 리스트 생성
+        setupMealsList();
+    }
+
+    private void setupWaterDrops(int current, int total) {
+        if (waterDropsContainer == null) return;
+
+        waterDropsContainer.removeAllViews();
+
+        for (int i = 0; i < total; i++) {
+            View drop = new View(this);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    40, // width in dp
+                    48  // height in dp
+            );
+            params.weight = 1;
+            params.setMargins(4, 0, 4, 0);
+            drop.setLayoutParams(params);
+
+            if (i < current) {
+                drop.setBackgroundResource(R.drawable.bg_water_drop);
+            } else {
+                drop.setBackgroundResource(R.drawable.bg_water_drop_empty);
+            }
+
+            waterDropsContainer.addView(drop);
+        }
+    }
+
+    private void setupMealsList() {
+        if (mealsContainer == null) return;
+
+        mealsContainer.removeAllViews();
+
+        // 테스트 데이터
+        addMealItem("아침", "09:00", "오트밀, 바나나, 아몬드", 380);
+        addMealItem("점심", "13:00", "김치찌개, 현미밥, 두부", 650);
+        addMealItem("저녁", "18:30", "닭가슴살 스테이크, 샐러드", 550);
+        addMealItem("간식", "21:00", "그릭 요거트", 270);
+    }
+
+    private void addMealItem(String mealType, String time, String foods, int calories) {
+        View mealView = getLayoutInflater().inflate(R.layout.item_meal, mealsContainer, false);
+
+        TextView tvMealTime = mealView.findViewById(R.id.tvMealTime);
+        TextView tvFoodItems = mealView.findViewById(R.id.tvFoodItems);
+        TextView tvCalories = mealView.findViewById(R.id.tvCalories);
+
+        tvMealTime.setText(mealType + " " + time);
+        tvFoodItems.setText(foods);
+        tvCalories.setText(String.valueOf(calories));
+
+        mealsContainer.addView(mealView);
     }
 }
