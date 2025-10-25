@@ -40,4 +40,12 @@
     <string name="nav_challenge">챌린지</string>
     <string name="nav_analysis">분석</string>
     <string name="nav_profile">프로필</string>
+
+    <!-- Text Input Bottom Sheet -->
+    <string-array name="meal_times">
+        <item>아침</item>
+        <item>점심</item>
+        <item>저녁</item>
+        <item>간식</item>
+    </string-array>
 </resources>

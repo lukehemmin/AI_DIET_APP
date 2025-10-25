@@ -1,5 +1,7 @@
 package com.lukehemmin.ai_diet_app;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -9,6 +11,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.graphics.Insets;
@@ -26,26 +30,49 @@ public class MainActivity extends AppCompatActivity {
     private CardView emptyStateLayout;
     private LinearLayout dataStateLayout;
     private Button btnAddPhotoEmpty, btnAddTextEmpty, btnAddPhoto;
-    
+
     // 데이터 상태 (테스트용)
     private boolean hasData = false; // 기본값: 빈 상태
+
+    // 이미지 선택을 위한 ActivityResultLauncher
+    private ActivityResultLauncher<Intent> imagePickerLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        
+
         // WindowInsets 설정
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        
+
+        setupImagePicker();
         initViews();
         setupListeners();
         updateUI();
+    }
+
+    private void setupImagePicker() {
+        // 이미지 선택 결과를 처리하는 ActivityResultLauncher
+        imagePickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                        Uri imageUri = result.getData().getData();
+                        if (imageUri != null) {
+                            // TODO: 실제로 이미지 처리 로직 구현
+                            Toast.makeText(this, "이미지 선택됨: " + imageUri.toString(), Toast.LENGTH_SHORT).show();
+                            // 테스트: 데이터 상태로 전환
+                            hasData = true;
+                            updateUI();
+                        }
+                    }
+                }
+        );
     }
     
     private void initViews() {
@@ -73,33 +100,25 @@ public class MainActivity extends AppCompatActivity {
         });
         
         // 사진 추가 버튼 (빈 상태)
-        btnAddPhotoEmpty.setOnClickListener(v -> {
-            Toast.makeText(this, "사진 추가", Toast.LENGTH_SHORT).show();
-            // 테스트: 데이터 상태로 전환
-            hasData = true;
-            updateUI();
-        });
+        btnAddPhotoEmpty.setOnClickListener(v -> openImagePicker());
 
         // 텍스트 추가 버튼 (빈 상태)
         btnAddTextEmpty.setOnClickListener(v -> {
-            Toast.makeText(this, "텍스트로 추가하기", Toast.LENGTH_SHORT).show();
-            // 테스트: 데이터 상태로 전환
-            hasData = true;
-            updateUI();
+            TextInputBottomSheet bottomSheet = new TextInputBottomSheet();
+            bottomSheet.show(getSupportFragmentManager(), "TextInputBottomSheet");
         });
 
         // 사진 추가 버튼 (데이터 상태)
         if (btnAddPhoto != null) {
-            btnAddPhoto.setOnClickListener(v -> {
-                Toast.makeText(this, "사진 추가", Toast.LENGTH_SHORT).show();
-            });
+            btnAddPhoto.setOnClickListener(v -> openImagePicker());
         }
         
-        // 텍스트 입력 버튼
+        // 텍스트 입력 버튼 (데이터 상태)
         Button btnTextInput = findViewById(R.id.btnTextInput);
         if (btnTextInput != null) {
             btnTextInput.setOnClickListener(v -> {
-                Toast.makeText(this, "텍스트 입력", Toast.LENGTH_SHORT).show();
+                TextInputBottomSheet bottomSheet = new TextInputBottomSheet();
+                bottomSheet.show(getSupportFragmentManager(), "TextInputBottomSheet");
             });
         }
         
@@ -152,5 +171,16 @@ public class MainActivity extends AppCompatActivity {
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat dateFormat = new SimpleDateFormat("M월 d일 EEEE", Locale.KOREAN);
         return dateFormat.format(calendar.getTime());
+    }
+
+    private void openImagePicker() {
+        // 이미지 선택 인텐트 생성 (갤러리, 카메라 등 선택 가능)
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+
+        // 안드로이드 시스템이 자동으로 앱 선택기를 보여줌
+        // (갤러리, 카메라, 파일 매니저 등)
+        imagePickerLauncher.launch(Intent.createChooser(intent, "사진 선택"));
     }
 }
