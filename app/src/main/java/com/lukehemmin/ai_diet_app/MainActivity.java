@@ -37,6 +37,9 @@ public class MainActivity extends AppCompatActivity {
     // 이미지 선택을 위한 ActivityResultLauncher
     private ActivityResultLauncher<Intent> imagePickerLauncher;
 
+    // 음식 분석을 위한 ActivityResultLauncher
+    private ActivityResultLauncher<Intent> foodAnalysisLauncher;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         setupImagePicker();
+        setupFoodAnalysisLauncher();
         initViews();
         setupListeners();
         updateUI();
@@ -64,12 +68,26 @@ public class MainActivity extends AppCompatActivity {
                     if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                         Uri imageUri = result.getData().getData();
                         if (imageUri != null) {
-                            // TODO: 실제로 이미지 처리 로직 구현
-                            Toast.makeText(this, "이미지 선택됨: " + imageUri.toString(), Toast.LENGTH_SHORT).show();
-                            // 테스트: 데이터 상태로 전환
-                            hasData = true;
-                            updateUI();
+                            // 이미지 선택 완료 후 음식 분석 화면으로 이동
+                            Intent intent = new Intent(this, FoodAnalysisActivity.class);
+                            intent.putExtra("image_uri", imageUri.toString());
+                            foodAnalysisLauncher.launch(intent);
                         }
+                    }
+                }
+        );
+    }
+
+    private void setupFoodAnalysisLauncher() {
+        // 음식 분석 결과를 처리하는 ActivityResultLauncher
+        foodAnalysisLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        // 분석 완료 후 데이터 상태로 전환
+                        hasData = true;
+                        updateUI();
+                        Toast.makeText(this, "음식이 추가되었습니다", Toast.LENGTH_SHORT).show();
                     }
                 }
         );
@@ -182,5 +200,13 @@ public class MainActivity extends AppCompatActivity {
         // 안드로이드 시스템이 자동으로 앱 선택기를 보여줌
         // (갤러리, 카메라, 파일 매니저 등)
         imagePickerLauncher.launch(Intent.createChooser(intent, "사진 선택"));
+    }
+
+    // TextInputBottomSheet에서 호출하는 public 메소드
+    public void startFoodAnalysisWithText(String foodText, String mealTime) {
+        Intent intent = new Intent(this, FoodAnalysisActivity.class);
+        intent.putExtra("food_text", foodText);
+        intent.putExtra("meal_time", mealTime);
+        foodAnalysisLauncher.launch(intent);
     }
 }

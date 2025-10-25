@@ -113,12 +113,16 @@ public class TextInputBottomSheet extends BottomSheetDialogFragment {
                 return;
             }
 
-            // TODO: 실제로 데이터 저장 로직 구현
-            String message = String.format("%s - %s", selectedMealTime, foodName);
+            // 음식 텍스트 생성
+            String foodText = foodName;
             if (!memo.isEmpty()) {
-                message += String.format("\n메모: %s", memo);
+                foodText += " (" + memo + ")";
             }
-            Toast.makeText(requireContext(), message + " 추가됨", Toast.LENGTH_LONG).show();
+
+            // MainActivity의 메소드를 통해 FoodAnalysisActivity 시작
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).startFoodAnalysisWithText(foodText, selectedMealTime);
+            }
 
             dismiss();
         });
