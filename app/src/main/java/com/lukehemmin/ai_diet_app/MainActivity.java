@@ -15,13 +15,17 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
+
 public class MainActivity extends AppCompatActivity {
 
     // UI 요소
-    private TextView tvDate;
+    private TextView tvDate, tvEmptyMessage;
     private CardView emptyStateLayout;
     private LinearLayout dataStateLayout;
-    private Button btnAddPhotoEmpty, btnAddPhoto;
+    private Button btnAddPhotoEmpty, btnAddTextEmpty, btnAddPhoto;
     
     // 데이터 상태 (테스트용)
     private boolean hasData = false; // 기본값: 빈 상태
@@ -47,9 +51,11 @@ public class MainActivity extends AppCompatActivity {
     private void initViews() {
         // 뷰 초기화
         tvDate = findViewById(R.id.tvDate);
+        tvEmptyMessage = findViewById(R.id.tvEmptyMessage);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
         dataStateLayout = findViewById(R.id.dataStateLayout);
         btnAddPhotoEmpty = findViewById(R.id.btnAddPhotoEmpty);
+        btnAddTextEmpty = findViewById(R.id.btnAddTextEmpty);
         btnAddPhoto = findViewById(R.id.btnAddPhoto);
     }
     
@@ -73,7 +79,15 @@ public class MainActivity extends AppCompatActivity {
             hasData = true;
             updateUI();
         });
-        
+
+        // 텍스트 추가 버튼 (빈 상태)
+        btnAddTextEmpty.setOnClickListener(v -> {
+            Toast.makeText(this, "텍스트로 추가하기", Toast.LENGTH_SHORT).show();
+            // 테스트: 데이터 상태로 전환
+            hasData = true;
+            updateUI();
+        });
+
         // 사진 추가 버튼 (데이터 상태)
         if (btnAddPhoto != null) {
             btnAddPhoto.setOnClickListener(v -> {
@@ -126,6 +140,17 @@ public class MainActivity extends AppCompatActivity {
             emptyStateLayout.setVisibility(View.VISIBLE);
             dataStateLayout.setVisibility(View.GONE);
             tvDate.setText("오늘");
+
+            // 빈 상태 메시지에 오늘 날짜 표시
+            String formattedDate = getCurrentDateString();
+            String message = getString(R.string.no_record_message, formattedDate);
+            tvEmptyMessage.setText(message);
         }
+    }
+
+    private String getCurrentDateString() {
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("M월 d일 EEEE", Locale.KOREAN);
+        return dateFormat.format(calendar.getTime());
     }
 }

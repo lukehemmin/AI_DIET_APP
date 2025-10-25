@@ -6,6 +6,7 @@
     <string name="no_record_title">기록이 없어요</string>
     <string name="no_record_message">%s에는 식사 기록이 없습니다</string>
     <string name="add_photo">사진으로 추가하기</string>
+    <string name="add_text">텍스트로 추가하기</string>
     
     <!-- Nutrition Info -->
     <string name="total_intake">총 섭취</string>

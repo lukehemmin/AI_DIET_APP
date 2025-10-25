@@ -107,25 +107,48 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:text="10월 24일 금요일에는 식사 기록이 없습니다"
                         android:textSize="14sp"
-                        android:textColor="@color/text_secondary" />
+                        android:textColor="@color/text_secondary"
+                        tools:text="10월 24일 금요일에는 식사 기록이 없습니다" />
 
-                    <!-- 사진 추가 버튼 -->
-                    <Button
-                        android:id="@+id/btnAddPhotoEmpty"
-                        android:layout_width="wrap_content"
-                        android:layout_height="56dp"
+                    <!-- 버튼 영역 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="32dp"
-                        android:paddingHorizontal="32dp"
-                        android:text="@string/add_photo"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/white"
-                        android:background="@drawable/bg_button_blue"
-                        android:drawableStart="@drawable/ic_camera"
-                        android:drawablePadding="8dp"
-                        android:elevation="0dp" />
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:paddingHorizontal="32dp">
+
+                        <!-- 사진 추가 버튼 -->
+                        <Button
+                            android:id="@+id/btnAddPhotoEmpty"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:text="@string/add_photo"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/white"
+                            android:background="@drawable/bg_button_blue"
+                            android:drawableStart="@drawable/ic_camera"
+                            android:drawablePadding="8dp"
+                            android:gravity="center" />
+
+                        <!-- 텍스트 추가 버튼 -->
+                        <Button
+                            android:id="@+id/btnAddTextEmpty"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:layout_marginTop="12dp"
+                            android:text="@string/add_text"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/white"
+                            android:background="@drawable/bg_button_green"
+                            android:drawableStart="@drawable/ic_edit"
+                            android:drawablePadding="8dp"
+                            android:gravity="center" />
+                    </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
