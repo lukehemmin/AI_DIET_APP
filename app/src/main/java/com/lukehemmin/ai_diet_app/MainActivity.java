@@ -146,11 +146,20 @@ public class MainActivity extends AppCompatActivity {
             btnAddPhoto.setOnClickListener(v -> openImagePicker());
         }
 
-        // 운동 추천 버튼
-        Button btnExercise = findViewById(R.id.btnExercise);
-        if (btnExercise != null) {
-            btnExercise.setOnClickListener(v -> {
-                Toast.makeText(this, "운동 추천 기능 준비 중", Toast.LENGTH_SHORT).show();
+        // 텍스트 입력 버튼 (데이터 상태)
+        Button btnAddText = findViewById(R.id.btnAddText);
+        if (btnAddText != null) {
+            btnAddText.setOnClickListener(v -> {
+                TextInputBottomSheet bottomSheet = new TextInputBottomSheet();
+                bottomSheet.show(getSupportFragmentManager(), "TextInputBottomSheet");
+            });
+        }
+
+        // 종합 분석 버튼
+        Button btnAnalysis = findViewById(R.id.btnAnalysis);
+        if (btnAnalysis != null) {
+            btnAnalysis.setOnClickListener(v -> {
+                Toast.makeText(this, "종합 분석 기능 준비 중", Toast.LENGTH_SHORT).show();
             });
         }
         
