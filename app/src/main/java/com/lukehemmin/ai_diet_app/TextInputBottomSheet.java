@@ -14,23 +14,25 @@ import android.widget.ViewFlipper;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.textfield.TextInputEditText;
 
 public class TextInputBottomSheet extends BottomSheetDialogFragment {
 
     private ViewFlipper viewFlipper;
     private TextView tvSelectedMealTime;
-    private EditText etFoodName;
-    private EditText etMemo;
+    private TextInputEditText etFoodName;
+    private TextInputEditText etMemo;
 
-    // Step 1 버튼들
-    private Button btnBreakfast;
-    private Button btnLunch;
-    private Button btnDinner;
-    private Button btnSnack;
+    // Step 1 카드들
+    private CardView cardBreakfast;
+    private CardView cardLunch;
+    private CardView cardDinner;
+    private CardView cardSnack;
 
     // Step 2 버튼들
     private Button btnBack;
@@ -75,10 +77,10 @@ public class TextInputBottomSheet extends BottomSheetDialogFragment {
         viewFlipper = view.findViewById(R.id.viewFlipper);
 
         // Step 1 뷰들
-        btnBreakfast = view.findViewById(R.id.btnBreakfast);
-        btnLunch = view.findViewById(R.id.btnLunch);
-        btnDinner = view.findViewById(R.id.btnDinner);
-        btnSnack = view.findViewById(R.id.btnSnack);
+        cardBreakfast = view.findViewById(R.id.cardBreakfast);
+        cardLunch = view.findViewById(R.id.cardLunch);
+        cardDinner = view.findViewById(R.id.cardDinner);
+        cardSnack = view.findViewById(R.id.cardSnack);
 
         // Step 2 뷰들
         tvSelectedMealTime = view.findViewById(R.id.tvSelectedMealTime);
@@ -89,11 +91,11 @@ public class TextInputBottomSheet extends BottomSheetDialogFragment {
     }
 
     private void setupListeners() {
-        // Step 1: 식사 시간 선택 버튼들
-        btnBreakfast.setOnClickListener(v -> selectMealTime("아침"));
-        btnLunch.setOnClickListener(v -> selectMealTime("점심"));
-        btnDinner.setOnClickListener(v -> selectMealTime("저녁"));
-        btnSnack.setOnClickListener(v -> selectMealTime("간식"));
+        // Step 1: 식사 시간 선택 카드들
+        cardBreakfast.setOnClickListener(v -> selectMealTime("아침"));
+        cardLunch.setOnClickListener(v -> selectMealTime("점심"));
+        cardDinner.setOnClickListener(v -> selectMealTime("저녁"));
+        cardSnack.setOnClickListener(v -> selectMealTime("간식"));
 
         // Step 2: 뒤로가기 버튼
         btnBack.setOnClickListener(v -> {

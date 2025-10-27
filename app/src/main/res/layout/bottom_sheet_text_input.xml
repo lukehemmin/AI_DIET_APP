@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@android:color/white"
+    android:background="@color/background_light"
     android:paddingTop="8dp"
     android:paddingBottom="24dp">
 
@@ -14,9 +14,9 @@
         android:layout_height="4dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="20dp"
-        android:background="#DDDDDD"
-        android:alpha="0.5" />
+        android:layout_marginBottom="16dp"
+        android:background="@color/text_tertiary"
+        android:alpha="0.6" />
 
     <!-- ViewFlipper로 단계별 UI 전환 -->
     <ViewFlipper
@@ -31,7 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="24dp"
+            android:paddingHorizontal="20dp"
             android:paddingBottom="8dp">
 
             <!-- 질문 -->
@@ -41,74 +41,182 @@
                 android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="24dp"
                 android:text="어떤 식사를 하셨나요?"
-                android:textSize="22sp"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="@color/text_primary" />
 
-            <!-- 4개 버튼 가로 배치 -->
+            <!-- 버튼 그리드 (2x2) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center">
+                android:orientation="vertical">
 
-                <!-- 아침 -->
-                <Button
-                    android:id="@+id/btnBreakfast"
-                    android:layout_width="0dp"
-                    android:layout_height="70dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="4dp"
-                    android:text="🌅\n아침"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_primary"
-                    android:background="@drawable/bg_button_bordered"
-                    android:gravity="center" />
+                <!-- 첫 번째 행: 아침, 점심 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
 
-                <!-- 점심 -->
-                <Button
-                    android:id="@+id/btnLunch"
-                    android:layout_width="0dp"
-                    android:layout_height="70dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginEnd="4dp"
-                    android:text="🌞\n점심"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_primary"
-                    android:background="@drawable/bg_button_bordered"
-                    android:gravity="center" />
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardBreakfast"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/white"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground">
 
-                <!-- 저녁 -->
-                <Button
-                    android:id="@+id/btnDinner"
-                    android:layout_width="0dp"
-                    android:layout_height="70dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginEnd="4dp"
-                    android:text="🌙\n저녁"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_primary"
-                    android:background="@drawable/bg_button_bordered"
-                    android:gravity="center" />
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="20dp"
+                            android:gravity="center">
 
-                <!-- 간식 -->
-                <Button
-                    android:id="@+id/btnSnack"
-                    android:layout_width="0dp"
-                    android:layout_height="70dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:text="🍪\n간식"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/text_primary"
-                    android:background="@drawable/bg_button_bordered"
-                    android:gravity="center" />
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🌅"
+                                android:textSize="32sp"
+                                android:layout_marginBottom="8dp" />
+
+                            <TextView
+                                android:id="@+id/btnBreakfast"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="아침"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardLunch"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/white"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="20dp"
+                            android:gravity="center">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🌞"
+                                android:textSize="32sp"
+                                android:layout_marginBottom="8dp" />
+
+                            <TextView
+                                android:id="@+id/btnLunch"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="점심"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
+
+                <!-- 두 번째 행: 저녁, 간식 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardDinner"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/white"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="20dp"
+                            android:gravity="center">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🌙"
+                                android:textSize="32sp"
+                                android:layout_marginBottom="8dp" />
+
+                            <TextView
+                                android:id="@+id/btnDinner"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="저녁"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cardSnack"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/white"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="20dp"
+                            android:gravity="center">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🍪"
+                                android:textSize="32sp"
+                                android:layout_marginBottom="8dp" />
+
+                            <TextView
+                                android:id="@+id/btnSnack"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="간식"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:textColor="@color/text_primary" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
 
@@ -117,24 +225,28 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="24dp">
+            android:paddingHorizontal="20dp">
 
             <!-- 선택한 식사 시간 표시 -->
-            <TextView
-                android:id="@+id/tvSelectedMealTime"
+            <androidx.cardview.widget.CardView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="✓ 점심"
-                android:textSize="14sp"
-                android:textColor="@color/primary_blue" />
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/primary_blue">
 
-            <!-- 구분선 -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginBottom="24dp"
-                android:background="#EEEEEE" />
+                <TextView
+                    android:id="@+id/tvSelectedMealTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="✓ 점심"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="8dp" />
+            </androidx.cardview.widget.CardView>
 
             <!-- 질문 -->
             <TextView
@@ -148,51 +260,57 @@
                 android:textColor="@color/text_primary" />
 
             <!-- 음식 이름 입력 -->
-            <EditText
-                android:id="@+id/etFoodName"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilFoodName"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginBottom="20dp"
-                android:hint="예: 김치찌개, 샐러드"
-                android:paddingHorizontal="20dp"
-                android:background="@drawable/bg_button_white"
-                android:textSize="16sp"
-                android:textColor="@color/text_primary"
-                android:textColorHint="@color/text_secondary"
-                android:inputType="text"
-                android:maxLines="1" />
-
-            <!-- 메모 라벨 -->
-            <TextView
-                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:text="메모 (선택)"
-                android:textSize="14sp"
-                android:textColor="@color/text_secondary" />
+                android:layout_marginBottom="16dp"
+                android:hint="음식 이름"
+                app:boxStrokeColor="@color/primary_blue"
+                app:hintTextColor="@color/primary_blue"
+                app:boxBackgroundColor="@color/white">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etFoodName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <!-- 메모 입력 -->
-            <EditText
-                android:id="@+id/etMemo"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilMemo"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
-                android:layout_height="100dp"
+                android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                android:hint="추가로 기록하고 싶은 내용이 있나요?"
-                android:padding="16dp"
-                android:background="@drawable/bg_button_white"
-                android:textSize="14sp"
-                android:textColor="@color/text_primary"
-                android:textColorHint="@color/text_secondary"
-                android:inputType="textMultiLine"
-                android:gravity="top|start"
-                android:maxLines="5" />
+                android:hint="메모 (선택사항)"
+                app:boxStrokeColor="@color/primary_blue"
+                app:hintTextColor="@color/primary_blue"
+                app:boxBackgroundColor="@color/white">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etMemo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine"
+                    android:textColor="@color/text_primary"
+                    android:textSize="14sp"
+                    android:gravity="top|start"
+                    android:minLines="3"
+                    android:maxLines="5" />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <!-- 버튼 영역 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center">
+                android:layout_marginBottom="8dp">
 
                 <Button
                     android:id="@+id/btnBack"
@@ -200,11 +318,15 @@
                     android:layout_height="56dp"
                     android:layout_weight="1"
                     android:layout_marginEnd="8dp"
-                    android:text="← 이전"
+                    android:text="이전"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary"
-                    android:background="@drawable/bg_button_white" />
+                    android:textAllCaps="false"
+                    app:backgroundTint="@color/white"
+                    app:strokeColor="@color/text_tertiary"
+                    app:strokeWidth="1dp"
+                    app:cornerRadius="12dp" />
 
                 <Button
                     android:id="@+id/btnComplete"
@@ -216,7 +338,9 @@
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:textColor="@color/white"
-                    android:background="@drawable/bg_button_blue" />
+                    android:textAllCaps="false"
+                    app:backgroundTint="@color/primary_blue"
+                    app:cornerRadius="12dp" />
             </LinearLayout>
         </LinearLayout>
     </ViewFlipper>
