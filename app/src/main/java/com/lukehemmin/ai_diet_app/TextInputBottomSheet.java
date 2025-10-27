@@ -134,9 +134,9 @@ public class TextInputBottomSheet extends BottomSheetDialogFragment {
         selectedMealTime = mealTime;
         tvSelectedMealTime.setText("✓ " + mealTime);
 
-        // Step 2로 전환
-        viewFlipper.setInAnimation(requireContext(), android.R.anim.slide_in_left);
-        viewFlipper.setOutAnimation(requireContext(), android.R.anim.slide_out_right);
+        // Step 2로 전환 (오른쪽에서 왼쪽으로)
+        viewFlipper.setInAnimation(requireContext(), R.anim.slide_in_right);
+        viewFlipper.setOutAnimation(requireContext(), R.anim.slide_out_left);
         viewFlipper.showNext();
 
         // 키보드 자동으로 띄우기
