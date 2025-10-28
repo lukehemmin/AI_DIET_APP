@@ -309,7 +309,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="16dp">
+                android:layout_marginBottom="24dp">
 
                 <ImageView
                     android:layout_width="28dp"
@@ -324,7 +324,7 @@
                     android:layout_weight="1"
                     android:layout_marginStart="12dp"
                     android:text="물 섭취량"
-                    android:textSize="16sp"
+                    android:textSize="18sp"
                     android:textStyle="bold"
                     android:textColor="@color/text_primary" />
 
@@ -334,13 +334,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="16dp"
                     android:text="5 / 8 잔"
-                    android:textSize="14sp"
-                    android:textColor="@color/text_secondary" />
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary_blue" />
 
                 <ImageButton
                     android:id="@+id/btnWaterMinus"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_marginEnd="8dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_minus"
@@ -349,24 +350,41 @@
 
                 <ImageButton
                     android:id="@+id/btnWaterPlus"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/ic_plus"
                     android:tint="@color/primary_blue"
                     android:contentDescription="물 추가" />
             </LinearLayout>
 
-            <!-- 물 프로그레스 바 -->
-            <ProgressBar
-                android:id="@+id/progressWater"
-                style="?android:attr/progressBarStyleHorizontal"
+            <!-- 프로그레스 바 -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="12dp"
+                android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:max="8"
-                android:progress="5"
-                android:progressDrawable="@drawable/bg_water_progress" />
+                android:paddingHorizontal="12dp">
+
+                <!-- 배경 프로그레스 바 -->
+                <ProgressBar
+                    android:id="@+id/waterProgressBackground"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:max="100"
+                    android:progress="100"
+                    android:progressDrawable="@drawable/bg_water_progress_background" />
+
+                <!-- 실제 프로그레스 바 -->
+                <ProgressBar
+                    android:id="@+id/waterProgress"
+                    android:layout_width="match_parent"
+                    android:layout_height="8dp"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:max="100"
+                    android:progress="63"
+                    android:progressDrawable="@drawable/bg_water_progress" />
+            </FrameLayout>
 
             <!-- 물방울 아이콘들 -->
             <LinearLayout
@@ -374,7 +392,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center">
+                android:gravity="center"
+                android:paddingVertical="8dp"
+                android:paddingHorizontal="12dp">
 
                 <!-- 물방울 아이콘들이 동적으로 추가됨 -->
             </LinearLayout>

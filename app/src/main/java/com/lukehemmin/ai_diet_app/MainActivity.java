@@ -1,12 +1,15 @@
 package com.lukehemmin.ai_diet_app;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,19 +29,27 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity {
 
     // UI 요소
-    private TextView tvDate, tvEmptyMessage;
+    private TextView tvDate, tvEmptyMessage, tvWaterCount;
     private CardView emptyStateLayout;
     private LinearLayout dataStateLayout;
     private Button btnAddPhotoEmpty, btnAddTextEmpty, btnAddPhoto;
     private ImageButton btnCalendar;
     private NutritionCircleView nutritionCircle;
     private LinearLayout waterDropsContainer, mealsContainer;
+    private ProgressBar waterProgress;
 
     // 데이터 상태 (테스트용)
     private boolean hasData = false; // 기본값: 빈 상태
 
     // 날짜 관리
     private Calendar selectedDate;
+
+    // 물 섭취량 관리
+    private int currentWaterCups = 5;
+    private final int totalWaterCups = 8;
+
+    // SharedPreferences
+    private SharedPreferences waterPrefs;
 
     // 이미지 선택을 위한 ActivityResultLauncher
     private ActivityResultLauncher<Intent> imagePickerLauncher;
@@ -61,11 +72,15 @@ public class MainActivity extends AppCompatActivity {
 
         selectedDate = Calendar.getInstance(); // 오늘 날짜로 초기화
 
+        // SharedPreferences 초기화
+        waterPrefs = getSharedPreferences("water_intake", Context.MODE_PRIVATE);
+
         setupImagePicker();
         setupFoodAnalysisLauncher();
         initViews();
         setupListeners();
         setupDateClickListeners();
+        loadWaterIntakeForDate(); // 선택된 날짜의 물 섭취량 불러오기
         updateUI();
     }
 
@@ -106,6 +121,7 @@ public class MainActivity extends AppCompatActivity {
         // 뷰 초기화
         tvDate = findViewById(R.id.tvDate);
         tvEmptyMessage = findViewById(R.id.tvEmptyMessage);
+        tvWaterCount = findViewById(R.id.tvWaterCount);
         emptyStateLayout = findViewById(R.id.emptyStateLayout);
         dataStateLayout = findViewById(R.id.dataStateLayout);
         btnAddPhotoEmpty = findViewById(R.id.btnAddPhotoEmpty);
@@ -115,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
         nutritionCircle = findViewById(R.id.nutritionCircle);
         waterDropsContainer = findViewById(R.id.waterDropsContainer);
         mealsContainer = findViewById(R.id.mealsContainer);
+        waterProgress = findViewById(R.id.waterProgress);
     }
     
     private void setupListeners() {
@@ -124,11 +141,13 @@ public class MainActivity extends AppCompatActivity {
         
         btnPrevDay.setOnClickListener(v -> {
             selectedDate.add(Calendar.DAY_OF_MONTH, -1);
+            loadWaterIntakeForDate();
             updateUI();
         });
 
         btnNextDay.setOnClickListener(v -> {
             selectedDate.add(Calendar.DAY_OF_MONTH, 1);
+            loadWaterIntakeForDate();
             updateUI();
         });
         
@@ -166,16 +185,24 @@ public class MainActivity extends AppCompatActivity {
         // 물 섭취량 버튼
         ImageButton btnWaterMinus = findViewById(R.id.btnWaterMinus);
         ImageButton btnWaterPlus = findViewById(R.id.btnWaterPlus);
-        
+
         if (btnWaterMinus != null) {
             btnWaterMinus.setOnClickListener(v -> {
-                Toast.makeText(this, "물 -1잔", Toast.LENGTH_SHORT).show();
+                if (currentWaterCups > 0) {
+                    currentWaterCups--;
+                    saveWaterIntake();
+                    updateWaterDisplay();
+                }
             });
         }
-        
+
         if (btnWaterPlus != null) {
             btnWaterPlus.setOnClickListener(v -> {
-                Toast.makeText(this, "물 +1잔", Toast.LENGTH_SHORT).show();
+                if (currentWaterCups < totalWaterCups) {
+                    currentWaterCups++;
+                    saveWaterIntake();
+                    updateWaterDisplay();
+                }
             });
         }
     }
@@ -250,6 +277,7 @@ public class MainActivity extends AppCompatActivity {
         tvDate.setOnClickListener(v -> {
             if (!isToday(selectedDate)) {
                 selectedDate = Calendar.getInstance();
+                loadWaterIntakeForDate();
                 updateUI();
                 Toast.makeText(this, "오늘 날짜로 이동했습니다", Toast.LENGTH_SHORT).show();
             }
@@ -260,6 +288,7 @@ public class MainActivity extends AppCompatActivity {
         CalendarDialog calendarDialog = new CalendarDialog();
         calendarDialog.setOnDateSelectedListener(selectedDate -> {
             this.selectedDate = (Calendar) selectedDate.clone();
+            loadWaterIntakeForDate();
             updateUI();
         });
         calendarDialog.show(getSupportFragmentManager(), "CalendarDialog");
@@ -278,11 +307,42 @@ public class MainActivity extends AppCompatActivity {
         // 원형 게이지 설정 (테스트 데이터)
         nutritionCircle.setNutritionData(195f, 95f, 62f);
 
-        // 물방울 생성
-        setupWaterDrops(8, 8);
+        // 물 섭취량 표시 업데이트
+        updateWaterDisplay();
 
         // 식사 리스트 생성
         setupMealsList();
+    }
+
+    private void updateWaterDisplay() {
+        // 물 섭취량 텍스트 업데이트
+        if (tvWaterCount != null) {
+            tvWaterCount.setText(currentWaterCups + " / " + totalWaterCups + " 잔");
+        }
+
+        // 프로그레스 바 업데이트
+        if (waterProgress != null) {
+            int progress = (int) ((currentWaterCups / (float) totalWaterCups) * 100);
+            waterProgress.setProgress(progress);
+        }
+
+        // 물방울 UI 업데이트
+        setupWaterDrops(currentWaterCups, totalWaterCups);
+    }
+
+    private String getDateKey(Calendar calendar) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        return dateFormat.format(calendar.getTime());
+    }
+
+    private void loadWaterIntakeForDate() {
+        String dateKey = getDateKey(selectedDate);
+        currentWaterCups = waterPrefs.getInt(dateKey, 0);
+    }
+
+    private void saveWaterIntake() {
+        String dateKey = getDateKey(selectedDate);
+        waterPrefs.edit().putInt(dateKey, currentWaterCups).apply();
     }
 
     private void setupWaterDrops(int current, int total) {
@@ -290,18 +350,21 @@ public class MainActivity extends AppCompatActivity {
 
         waterDropsContainer.removeAllViews();
 
+        // Convert dp to pixels
+        int sizePx = (int) (32 * getResources().getDisplayMetrics().density);
+        int marginPx = (int) (2 * getResources().getDisplayMetrics().density);
+
         for (int i = 0; i < total; i++) {
             View drop = new View(this);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    40, // width in dp
-                    48  // height in dp
+                    sizePx,  // width: 42dp
+                    sizePx   // height: 42dp
             );
-            params.weight = 1;
-            params.setMargins(4, 0, 4, 0);
+            params.setMargins(marginPx, 0, marginPx, 0);
             drop.setLayoutParams(params);
 
             if (i < current) {
-                drop.setBackgroundResource(R.drawable.bg_water_drop);
+                drop.setBackgroundResource(R.drawable.bg_water_drop_filled);
             } else {
                 drop.setBackgroundResource(R.drawable.bg_water_drop_empty);
             }
