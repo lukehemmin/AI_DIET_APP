@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_light"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center">
+
+        <!-- 로고 영역 -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="32dp"
+            app:cardCornerRadius="50dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="@android:color/transparent">
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/icon"
+                android:scaleType="fitCenter"
+                android:padding="12dp"
+                android:contentDescription="앱 로고" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- 회원가입 카드 -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/white">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="32dp">
+
+                <!-- 회원가입 제목 -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="회원가입"
+                    android:textColor="@color/text_primary"
+                    android:textSize="28sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="24dp" />
+
+                <!-- 이름 입력 -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_name"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="이름"
+                    app:boxStrokeColor="@color/primary_blue"
+                    app:hintTextColor="@color/primary_blue">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName"
+                        android:textColor="@color/text_primary" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- 이메일 입력 -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_email"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:hint="이메일"
+                    app:boxStrokeColor="@color/primary_blue"
+                    app:hintTextColor="@color/primary_blue">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_email"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textEmailAddress"
+                        android:textColor="@color/text_primary" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- 생년월일 입력 -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_birthdate"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:hint="생년월일 (YYYY-MM-DD)"
+                    app:boxStrokeColor="@color/primary_blue"
+                    app:hintTextColor="@color/primary_blue">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_birthdate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="date"
+                        android:focusable="false"
+                        android:clickable="true"
+                        android:textColor="@color/text_primary" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- 비밀번호 입력 -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_password"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:hint="비밀번호"
+                    app:boxStrokeColor="@color/primary_blue"
+                    app:hintTextColor="@color/primary_blue"
+                    app:passwordToggleEnabled="true"
+                    app:passwordToggleTint="@color/text_secondary"
+                    app:helperText="8자 이상 입력해주세요"
+                    app:helperTextTextColor="@color/text_tertiary">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_password"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword"
+                        android:textColor="@color/text_primary" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- 비밀번호 확인 입력 -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/til_password_confirm"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:hint="비밀번호 확인"
+                    app:boxStrokeColor="@color/primary_blue"
+                    app:hintTextColor="@color/primary_blue"
+                    app:passwordToggleEnabled="true"
+                    app:passwordToggleTint="@color/text_secondary">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_password_confirm"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPassword"
+                        android:textColor="@color/text_primary" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- 회원가입 버튼 -->
+                <Button
+                    android:id="@+id/btn_signup"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="24dp"
+                    android:text="회원가입"
+                    android:textAllCaps="false"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/primary_blue"
+                    app:cornerRadius="12dp" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- 로그인 링크 -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="이미 계정이 있으신가요? "
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/tv_login"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="로그인"
+                android:textColor="@color/primary_blue"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackground"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

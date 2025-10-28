@@ -23,6 +23,11 @@
             </intent-filter>
         </activity>
 
+        <!-- Signup Activity - 회원가입 화면 -->
+        <activity
+            android:name=".SignupActivity"
+            android:exported="false" />
+
         <!-- Main Activity - 로그인 후 메인 화면 -->
         <activity
             android:name=".MainActivity"

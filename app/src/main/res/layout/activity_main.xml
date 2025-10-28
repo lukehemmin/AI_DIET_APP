@@ -140,29 +140,33 @@
                         <Button
                             android:id="@+id/btnAddPhotoEmpty"
                             android:layout_width="match_parent"
-                            android:layout_height="56dp"
+                            android:layout_height="72dp"
                             android:text="@string/add_photo"
-                            android:textSize="16sp"
+                            android:textSize="17sp"
                             android:textStyle="bold"
                             android:textColor="@color/white"
                             android:background="@drawable/bg_button_blue"
-                            android:drawableStart="@drawable/ic_camera"
-                            android:drawablePadding="8dp"
+                            android:drawableStart="@drawable/ic_add_photo"
+                            android:drawablePadding="12dp"
+                            android:maxLines="1"
+                            android:ellipsize="end"
                             android:gravity="center" />
 
                         <!-- 텍스트 추가 버튼 -->
                         <Button
                             android:id="@+id/btnAddTextEmpty"
                             android:layout_width="match_parent"
-                            android:layout_height="56dp"
-                            android:layout_marginTop="12dp"
+                            android:layout_height="72dp"
+                            android:layout_marginTop="16dp"
                             android:text="@string/add_text"
-                            android:textSize="16sp"
+                            android:textSize="17sp"
                             android:textStyle="bold"
                             android:textColor="@color/white"
                             android:background="@drawable/bg_button_green"
-                            android:drawableStart="@drawable/ic_edit"
-                            android:drawablePadding="8dp"
+                            android:drawableStart="@drawable/ic_description"
+                            android:drawablePadding="12dp"
+                            android:maxLines="1"
+                            android:ellipsize="end"
                             android:gravity="center" />
                     </LinearLayout>
                 </LinearLayout>
