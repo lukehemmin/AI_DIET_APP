@@ -8,7 +8,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.cardview.widget.CardView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProfileActivity extends BaseActivity {
 
@@ -19,7 +23,8 @@ public class ProfileActivity extends BaseActivity {
     private TextView tvWeeklyDays, tvAvgCalories, tvWaterIntake, tvGoalAchievement;
     private TextView btnViewAllBadges;
     private ProgressBar progressLevel;
-    private CardView menuSettings, menuNotifications, menuHelp, menuHealthData, menuPrivacy, menuSetGoal;
+    private RecyclerView profileMenuRecyclerView;
+    private ProfileMenuAdapter menuAdapter;
     private LinearLayout navHome, navChallenge, navAnalysis;
 
     @Override
@@ -57,13 +62,10 @@ public class ProfileActivity extends BaseActivity {
         // 배지
         btnViewAllBadges = findViewById(R.id.btnViewAllBadges);
 
-        // 메뉴
-        menuSettings = findViewById(R.id.menuSettings);
-        menuNotifications = findViewById(R.id.menuNotifications);
-        menuHelp = findViewById(R.id.menuHelp);
-        menuHealthData = findViewById(R.id.menuHealthData);
-        menuPrivacy = findViewById(R.id.menuPrivacy);
-        menuSetGoal = findViewById(R.id.menuSetGoal);
+        // 메뉴 RecyclerView
+        profileMenuRecyclerView = findViewById(R.id.profileMenuRecyclerView);
+        profileMenuRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        setupMenuItems();
 
         // 하단 네비게이션
         navHome = findViewById(R.id.navHome);
@@ -85,31 +87,6 @@ public class ProfileActivity extends BaseActivity {
             Toast.makeText(this, "배지 목록은 준비 중입니다", Toast.LENGTH_SHORT).show();
         });
 
-        // 메뉴 클릭 리스너
-        menuSettings.setOnClickListener(v -> {
-            Toast.makeText(this, "설정 화면은 준비 중입니다", Toast.LENGTH_SHORT).show();
-        });
-
-        menuNotifications.setOnClickListener(v -> {
-            Toast.makeText(this, "알림 설정은 준비 중입니다", Toast.LENGTH_SHORT).show();
-        });
-
-        menuHelp.setOnClickListener(v -> {
-            Toast.makeText(this, "도움말은 준비 중입니다", Toast.LENGTH_SHORT).show();
-        });
-
-        menuHealthData.setOnClickListener(v -> {
-            Toast.makeText(this, "건강 데이터 연동은 준비 중입니다", Toast.LENGTH_SHORT).show();
-        });
-
-        menuPrivacy.setOnClickListener(v -> {
-            Toast.makeText(this, "개인정보 보호 설정은 준비 중입니다", Toast.LENGTH_SHORT).show();
-        });
-
-        menuSetGoal.setOnClickListener(v -> {
-            Toast.makeText(this, "목표 설정 기능은 준비 중입니다", Toast.LENGTH_SHORT).show();
-        });
-
         // 하단 네비게이션
         navHome.setOnClickListener(v -> {
             Intent intent = new Intent(this, MainActivity.class);
@@ -128,6 +105,83 @@ public class ProfileActivity extends BaseActivity {
             startActivity(intent);
             finish();
         });
+    }
+
+    private void setupMenuItems() {
+        List<ProfileMenuItem> menuItems = new ArrayList<>();
+
+        // 일반 메뉴 아이템
+        menuItems.add(new ProfileMenuItem(
+                "settings",
+                R.drawable.ic_settings,
+                getString(R.string.settings),
+                getString(R.string.settings_desc)
+        ));
+
+        menuItems.add(new ProfileMenuItem(
+                "notifications",
+                R.drawable.ic_notifications,
+                getString(R.string.notifications),
+                getString(R.string.notifications_desc)
+        ));
+
+        menuItems.add(new ProfileMenuItem(
+                "help",
+                R.drawable.ic_help,
+                getString(R.string.help),
+                getString(R.string.help_desc)
+        ));
+
+        menuItems.add(new ProfileMenuItem(
+                "health_data",
+                R.drawable.ic_heart,
+                getString(R.string.health_data),
+                getString(R.string.health_data_desc)
+        ));
+
+        menuItems.add(new ProfileMenuItem(
+                "privacy",
+                R.drawable.ic_privacy,
+                getString(R.string.privacy),
+                getString(R.string.privacy_desc)
+        ));
+
+        // 목표 설정 아이템 (특별 타입)
+        menuItems.add(new ProfileMenuItem(
+                "set_goal",
+                getString(R.string.set_goal),
+                getString(R.string.set_goal_desc)
+        ));
+
+        // 어댑터 설정
+        menuAdapter = new ProfileMenuAdapter(menuItems, menuId -> {
+            handleMenuClick(menuId);
+        });
+
+        profileMenuRecyclerView.setAdapter(menuAdapter);
+    }
+
+    private void handleMenuClick(String menuId) {
+        switch (menuId) {
+            case "settings":
+                Toast.makeText(this, "설정 화면은 준비 중입니다", Toast.LENGTH_SHORT).show();
+                break;
+            case "notifications":
+                Toast.makeText(this, "알림 설정은 준비 중입니다", Toast.LENGTH_SHORT).show();
+                break;
+            case "help":
+                Toast.makeText(this, "도움말은 준비 중입니다", Toast.LENGTH_SHORT).show();
+                break;
+            case "health_data":
+                Toast.makeText(this, "건강 데이터 연동은 준비 중입니다", Toast.LENGTH_SHORT).show();
+                break;
+            case "privacy":
+                Toast.makeText(this, "개인정보 보호 설정은 준비 중입니다", Toast.LENGTH_SHORT).show();
+                break;
+            case "set_goal":
+                Toast.makeText(this, "목표 설정 기능은 준비 중입니다", Toast.LENGTH_SHORT).show();
+                break;
+        }
     }
 
     private void loadProfileData() {

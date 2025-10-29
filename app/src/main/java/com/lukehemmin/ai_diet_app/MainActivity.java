@@ -133,27 +133,27 @@ public class MainActivity extends BaseActivity {
     
     private void setupListeners() {
         // 하단 네비게이션 - 챌린지 버튼
-        LinearLayout navChallengeButton = findViewById(R.id.navChallengeButton);
-        if (navChallengeButton != null) {
-            navChallengeButton.setOnClickListener(v -> {
+        LinearLayout navChallenge = findViewById(R.id.navChallenge);
+        if (navChallenge != null) {
+            navChallenge.setOnClickListener(v -> {
                 Intent intent = new Intent(this, ChallengeActivity.class);
                 startActivity(intent);
             });
         }
-        
+
         // 하단 네비게이션 - 분석 버튼
-        LinearLayout navAnalysisButton = findViewById(R.id.navAnalysisButton);
-        if (navAnalysisButton != null) {
-            navAnalysisButton.setOnClickListener(v -> {
+        LinearLayout navAnalysis = findViewById(R.id.navAnalysis);
+        if (navAnalysis != null) {
+            navAnalysis.setOnClickListener(v -> {
                 Intent intent = new Intent(this, AnalysisActivity.class);
                 startActivity(intent);
             });
         }
-        
+
         // 하단 네비게이션 - 프로필 버튼
-        LinearLayout navProfileButton = findViewById(R.id.navProfileButton);
-        if (navProfileButton != null) {
-            navProfileButton.setOnClickListener(v -> {
+        LinearLayout navProfile = findViewById(R.id.navProfile);
+        if (navProfile != null) {
+            navProfile.setOnClickListener(v -> {
                 Intent intent = new Intent(this, ProfileActivity.class);
                 startActivity(intent);
             });
