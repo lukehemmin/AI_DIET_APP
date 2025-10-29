@@ -13,10 +13,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -26,7 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     // UI 요소
     private TextView tvDate, tvEmptyMessage, tvWaterCount;
@@ -60,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
         // WindowInsets 설정
@@ -135,6 +132,33 @@ public class MainActivity extends AppCompatActivity {
     }
     
     private void setupListeners() {
+        // 하단 네비게이션 - 챌린지 버튼
+        LinearLayout navChallengeButton = findViewById(R.id.navChallengeButton);
+        if (navChallengeButton != null) {
+            navChallengeButton.setOnClickListener(v -> {
+                Intent intent = new Intent(this, ChallengeActivity.class);
+                startActivity(intent);
+            });
+        }
+        
+        // 하단 네비게이션 - 분석 버튼
+        LinearLayout navAnalysisButton = findViewById(R.id.navAnalysisButton);
+        if (navAnalysisButton != null) {
+            navAnalysisButton.setOnClickListener(v -> {
+                Intent intent = new Intent(this, AnalysisActivity.class);
+                startActivity(intent);
+            });
+        }
+        
+        // 하단 네비게이션 - 프로필 버튼
+        LinearLayout navProfileButton = findViewById(R.id.navProfileButton);
+        if (navProfileButton != null) {
+            navProfileButton.setOnClickListener(v -> {
+                Intent intent = new Intent(this, ProfileActivity.class);
+                startActivity(intent);
+            });
+        }
+        
         // 날짜 네비게이션 버튼
         ImageButton btnPrevDay = findViewById(R.id.btnPrevDay);
         ImageButton btnNextDay = findViewById(R.id.btnNextDay);
@@ -178,7 +202,8 @@ public class MainActivity extends AppCompatActivity {
         Button btnAnalysis = findViewById(R.id.btnAnalysis);
         if (btnAnalysis != null) {
             btnAnalysis.setOnClickListener(v -> {
-                Toast.makeText(this, "종합 분석 기능 준비 중", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(this, AnalysisActivity.class);
+                startActivity(intent);
             });
         }
         

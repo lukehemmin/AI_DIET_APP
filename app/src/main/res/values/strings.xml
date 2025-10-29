@@ -48,4 +48,33 @@
         <item>저녁</item>
         <item>간식</item>
     </string-array>
+    
+    <!-- Profile Screen -->
+    <string name="profile">프로필</string>
+    <string name="level">Level %d · 다이어트 마스터</string>
+    <string name="days_recorded">%d일</string>
+    <string name="weight_change">%+.1fkg</string>
+    <string name="badges_earned">%d개</string>
+    <string name="consecutive_days">연속 기록</string>
+    <string name="target_achieved">목표 달성</string>
+    <string name="badge_achievement">배지 획득</string>
+    <string name="this_week_activity">이번 주 활동</string>
+    <string name="days_recorded_label">기록 일수</string>
+    <string name="avg_calories">평균 칼로리</string>
+    <string name="water_intake_rate">물 섭취</string>
+    <string name="goal_achievement">목표 달성</string>
+    <string name="recent_badges">최근 획득 배지</string>
+    <string name="view_all">모두 보기</string>
+    <string name="settings">설정</string>
+    <string name="settings_desc">앱 설정 및 개인정보</string>
+    <string name="notifications">알림</string>
+    <string name="notifications_desc">푸시 알림 및 리마인더</string>
+    <string name="help">도움말</string>
+    <string name="help_desc">사용법 및 FAQ</string>
+    <string name="health_data">건강 데이터</string>
+    <string name="health_data_desc">HealthKit 연동 관리</string>
+    <string name="privacy">개인정보 보호</string>
+    <string name="privacy_desc">데이터 보안 및 권한</string>
+    <string name="set_goal">목표 설정하기</string>
+    <string name="set_goal_desc">개인 맞춤 다이어트 목표를 설정해보세요</string>
 </resources>

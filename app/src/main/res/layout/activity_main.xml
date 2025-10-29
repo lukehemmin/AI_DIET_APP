@@ -217,6 +217,7 @@
 
         <!-- 챌린지 -->
         <LinearLayout
+            android:id="@+id/navChallengeButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -244,6 +245,7 @@
 
         <!-- 분석 -->
         <LinearLayout
+            android:id="@+id/navAnalysisButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -271,6 +273,7 @@
 
         <!-- 프로필 -->
         <LinearLayout
+            android:id="@+id/navProfileButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"

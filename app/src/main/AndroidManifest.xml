@@ -37,6 +37,21 @@
         <activity
             android:name=".FoodAnalysisActivity"
             android:exported="false" />
+
+        <!-- Analysis Activity - 식습관 패턴 분석 화면 -->
+        <activity
+            android:name=".AnalysisActivity"
+            android:exported="false" />
+
+        <!-- Challenge Activity - 챌린지 화면 -->
+        <activity
+            android:name=".ChallengeActivity"
+            android:exported="false" />
+
+        <!-- Profile Activity - 프로필 화면 -->
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
