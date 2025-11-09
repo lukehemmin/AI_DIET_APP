@@ -77,4 +77,18 @@
     <string name="privacy_desc">데이터 보안 및 권한</string>
     <string name="set_goal">목표 설정하기</string>
     <string name="set_goal_desc">개인 맞춤 다이어트 목표를 설정해보세요</string>
+
+    <!-- Badges -->
+    <string name="badge_streak">연속 달성</string>
+    <string name="badge_streak_desc">7일 연속 기록</string>
+    <string name="badge_workout">운동 마스터</string>
+    <string name="badge_workout_desc">주 5회 운동 완료</string>
+    <string name="badge_water">수분 충족</string>
+    <string name="badge_water_desc">일일 물 목표 달성</string>
+    <string name="badge_healthy">건강한 식단</string>
+    <string name="badge_healthy_desc">영양 균형 달성</string>
+    <string name="badge_quick">빠른 성취</string>
+    <string name="badge_quick_desc">첫 주 목표 달성</string>
+    <string name="badge_perfect">완벽 달성</string>
+    <string name="badge_perfect_desc">일일 목표 100%</string>
 </resources>
