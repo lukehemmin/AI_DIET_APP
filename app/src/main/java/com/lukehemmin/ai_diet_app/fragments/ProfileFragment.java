@@ -17,12 +17,13 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.lukehemmin.ai_diet_app.R;
 
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+
 public class ProfileFragment extends Fragment {
 
     private TabLayout tabLayout;
-    private FrameLayout contentContainer;
+    private ViewPager2 viewPager;
     private ImageView btnSettings;
-    private TextView btnEditProfile;
     private TextView txtProfileName, txtSinceDate;
 
     @Nullable
@@ -31,51 +32,37 @@ public class ProfileFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
         
         initializeViews(view);
-        setupTabs();
+        setupViewPager();
         setupListeners();
         loadProfileData();
-        
-        // Load initial content
-        loadProfileInfoContent();
         
         return view;
     }
 
     private void initializeViews(View view) {
         tabLayout = view.findViewById(R.id.tab_layout);
-        contentContainer = view.findViewById(R.id.profile_content_container);
+        viewPager = view.findViewById(R.id.view_pager);
         btnSettings = view.findViewById(R.id.btn_settings);
         txtProfileName = view.findViewById(R.id.txt_profile_name);
         txtSinceDate = view.findViewById(R.id.txt_since_date);
     }
 
-    private void setupTabs() {
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.profile_info));
-        tabLayout.addTab(tabLayout.newTab().setText(R.string.profile_achievements));
-        tabLayout.addTab(tabLayout.newTab().setText("친구 (2)"));
+    private void setupViewPager() {
+        viewPager.setAdapter(new ProfilePagerAdapter(this));
 
-        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
-            @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                switch (tab.getPosition()) {
-                    case 0:
-                        loadProfileInfoContent();
-                        break;
-                    case 1:
-                        // Load achievements content
-                        break;
-                    case 2:
-                        // Load friends content
-                        break;
-                }
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+            switch (position) {
+                case 0:
+                    tab.setText(R.string.profile_info);
+                    break;
+                case 1:
+                    tab.setText(R.string.profile_achievements);
+                    break;
+                case 2:
+                    tab.setText("친구 (2)");
+                    break;
             }
-
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) { }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) { }
-        });
+        }).attach();
     }
 
     private void setupListeners() {
@@ -87,13 +74,34 @@ public class ProfileFragment extends Fragment {
         txtSinceDate.setText("since 2024. 05. 21");
     }
 
-    private void loadProfileInfoContent() {
-        View profileInfoView = getLayoutInflater().inflate(R.layout.fragment_profile_info, contentContainer, false);
-        contentContainer.removeAllViews();
-        contentContainer.addView(profileInfoView);
-    }
-
     private void openSettings() {
         // TODO: Open settings
+    }
+
+    private static class ProfilePagerAdapter extends FragmentStateAdapter {
+
+        public ProfilePagerAdapter(@NonNull Fragment fragment) {
+            super(fragment);
+        }
+
+        @NonNull
+        @Override
+        public Fragment createFragment(int position) {
+            switch (position) {
+                case 0:
+                    return new ProfileInfoFragment();
+                case 1:
+                    return new ProfileAchievementsFragment();
+                case 2:
+                    return new ProfileFriendsFragment();
+                default:
+                    return new Fragment();
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return 3;
+        }
     }
 }

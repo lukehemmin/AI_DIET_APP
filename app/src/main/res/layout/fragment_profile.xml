@@ -89,10 +89,10 @@
         </com.google.android.material.tabs.TabLayout>
 
         <!-- Content Area -->
-        <FrameLayout
-            android:id="@+id/profile_content_container"
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/view_pager"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 </ScrollView>
