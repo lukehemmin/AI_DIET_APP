@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors -->
+    <color name="primary_blue">#0A84FF</color>
+    <color name="state_success">#34C759</color>
+    <color name="orange_500">#FF9500</color>
+    <color name="primary_orange">#FF9500</color>
+    <color name="primary_green">#34C759</color>
+    
+    <!-- Gray Scale -->
+    <color name="gray_100">#FFFFFF</color>
+    <color name="gray_90">#F7F8FA</color>
+    <color name="gray_80">#F2F4F7</color>
+    <color name="gray_70">#E9EDF0</color>
+    <color name="gray_50">#CED4DA</color>
+    <color name="gray_text">#334155</color>
+    <color name="gray_subtext">#64748B</color>
+    
+    <!-- Shadow -->
+    <color name="shadow_color">#14000000</color>
+    <color name="profile_image_border">#300A84FF</color>
+    
+    <!-- Basic Colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

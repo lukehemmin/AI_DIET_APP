@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gray_90">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_lg">
+
+        <!-- AI Weekly Exercise Plan Card -->
+        <include layout="@layout/card_analysis_exercise_plan" />
+
+        <!-- AI Custom Recipe Card -->
+        <include layout="@layout/card_analysis_ai_recipe" />
+
+        <!-- Fridge Recipe Card -->
+        <include layout="@layout/card_analysis_fridge_recipe" />
+
+        <!-- Calorie Trend Card -->
+        <include layout="@layout/card_analysis_calorie_trend" />
+
+        <!-- AI Eating Habits Card -->
+        <include layout="@layout/card_analysis_eating_habits" />
+
+        <!-- AI Eating Pattern Card -->
+        <include layout="@layout/card_analysis_eating_pattern" />
+
+        <!-- Weekly Nutrition Card -->
+        <include layout="@layout/card_analysis_weekly_nutrition" />
+
+        <!-- Meal Time Pattern Card -->
+        <include layout="@layout/card_analysis_meal_time" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -1,0 +1,69 @@
+<resources>
+    <string name="app_name">HealthMate</string>
+    
+    <!-- Bottom Navigation -->
+    <string name="nav_home">홈</string>
+    <string name="nav_analysis">분석</string>
+    <string name="nav_chat">AI 채팅</string>
+    <string name="nav_groups">그룹</string>
+    <string name="nav_profile">프로필</string>
+    
+    <!-- Home Screen -->
+    <string name="home_daily_calorie">오늘 총 섭취 칼로리</string>
+    <string name="home_kcal_unit">kcal</string>
+    <string name="home_carbs">탄수화물</string>
+    <string name="home_protein">단백질</string>
+    <string name="home_fat">지방</string>
+    <string name="home_water_intake">오늘의 수분 섭취</string>
+    <string name="home_water_goal">목표: 8컵</string>
+    <string name="home_meal_log">오늘의 식단 기록</string>
+    <string name="home_add_manual">수동으로 추가</string>
+    <string name="home_no_meals">아직 기록된 식단이 없습니다.\n하단 카메라 버튼 또는 수동 추가를 눌러 식사를 시작하세요.</string>
+    
+    <!-- Profile Screen -->
+    <string name="profile_since">since %s</string>
+    <string name="profile_info">내 정보</string>
+    <string name="profile_achievements">업적</string>
+    <string name="profile_friends">친구 (%d)</string>
+    <string name="profile_basic_info">기본 정보</string>
+    <string name="profile_gender">성별</string>
+    <string name="profile_age">나이</string>
+    <string name="profile_height">키</string>
+    <string name="profile_weight">현재 체중</string>
+    <string name="profile_my_goal">나의 목표</string>
+    <string name="profile_bmr">기초대사량(BMR)</string>
+    <string name="profile_daily_goal">일일 목표 섭취량</string>
+    <string name="profile_male">남성</string>
+    <string name="profile_female">여성</string>
+    <string name="profile_age_unit">세</string>
+    <string name="profile_cm_unit">cm</string>
+    <string name="profile_kg_unit">kg</string>
+    <string name="profile_add_friend">친구 추가</string>
+    <string name="profile_no_friends">아직 친구가 없습니다.</string>
+    
+    <!-- Groups Screen -->
+    <string name="groups_title">그룹</string>
+    <string name="groups_subtitle">친구들과 함께 챌린지에 도전해보세요.</string>
+    <string name="groups_my_groups">내 그룹</string>
+    <string name="groups_create">그룹 만들기</string>
+    <string name="groups_members">%d명 참여중</string>
+    <string name="groups_progress">%d%% 달성</string>
+    
+    <!-- Chat Screen -->
+    <string name="chat_title">AI 영양사</string>
+    <string name="chat_subtitle">식단 기록을 바탕으로 답변해드려요.</string>
+    <string name="chat_greeting">안녕하세요! AI 영양사 HealthMate입니다. 식단, 운동 등 건강에 대해 무엇이든 물어보세요.</string>
+    <string name="chat_input_hint">AI 영양사에게 메시지 보내기</string>
+    
+    <!-- Analysis Screen -->
+    <string name="analysis_title">분석 및 제안</string>
+    <string name="analysis_subtitle">지금까지 기록을 바탕으로 AI가 분석합니다</string>
+    
+    <!-- Common -->
+    <string name="ok">확인</string>
+    <string name="cancel">취소</string>
+    <string name="delete">삭제</string>
+    <string name="save">저장</string>
+    <string name="add">추가</string>
+    <string name="today">오늘</string>
+</resources>

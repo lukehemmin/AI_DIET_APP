@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/spacing_lg"
+    android:layout_marginEnd="@dimen/spacing_lg"
+    android:layout_marginTop="@dimen/spacing_lg"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/corner_radius_xl"
+    app:cardElevation="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_xl">
+
+        <ImageView
+            android:id="@+id/suggestion_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_circle_green_light"
+            android:padding="8dp"
+            android:src="@drawable/ic_lightning"
+            app:tint="@color/primary_green" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_lg"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/suggestion_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="잘하고 있어요!"
+                android:textColor="@color/gray_text"
+                android:textSize="@dimen/text_md"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/suggestion_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="균형 잡힌 식단을 유지하고 있습니다. 이대로 꾸준히 관리해 보세요."
+                android:textColor="@color/gray_subtext"
+                android:textSize="@dimen/text_sm" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/suggestion_cta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableEnd="@drawable/ic_chevron_right"
+            android:drawablePadding="4dp"
+            android:text="건강 리포트 보기"
+            android:textColor="@color/primary_blue"
+            android:textSize="@dimen/text_sm"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_sm">
+    
+    <!-- AI Message -->
+    <LinearLayout
+        android:id="@+id/layout_ai_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="start"
+        android:visibility="gone">
+        
+        <TextView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="🤖"
+            android:textSize="28sp"
+            android:gravity="center"
+            android:layout_marginEnd="@dimen/spacing_sm"/>
+        
+        <TextView
+            android:id="@+id/txt_ai_message"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="안녕하세요! AI 영양사 HealthMate입니다."
+            android:textSize="@dimen/text_base"
+            android:textColor="@color/gray_text"
+            android:background="@drawable/bg_message_ai"
+            android:padding="@dimen/spacing_md"/>
+    </LinearLayout>
+    
+    <!-- User Message -->
+    <LinearLayout
+        android:id="@+id/layout_user_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:visibility="gone">
+        
+        <TextView
+            android:id="@+id/txt_user_message"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="안녕하세요"
+            android:textSize="@dimen/text_base"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_message_user"
+            android:padding="@dimen/spacing_md"
+            android:layout_marginStart="60dp"/>
+    </LinearLayout>
+</LinearLayout>

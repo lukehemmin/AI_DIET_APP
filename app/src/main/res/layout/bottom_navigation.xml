@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/bottom_navigation"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/bottom_nav_height"
+    android:orientation="horizontal"
+    android:background="@color/gray_100"
+    android:elevation="8dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
+    
+    <!-- Home -->
+    <LinearLayout
+        android:id="@+id/nav_home"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless">
+        
+        <ImageView
+            android:id="@+id/nav_home_icon"
+            android:layout_width="@dimen/bottom_nav_icon_size"
+            android:layout_height="@dimen/bottom_nav_icon_size"
+            android:src="@drawable/ic_home_selector" 
+            app:tint="@color/bottom_nav_item_color"/>
+        <TextView
+            android:id="@+id/nav_home_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/nav_home"
+            android:textSize="@dimen/text_xs"
+            android:textStyle="bold"
+            android:textColor="@color/bottom_nav_item_color"
+            android:layout_marginTop="4dp"/>
+    </LinearLayout>
+    
+    <!-- Analysis -->
+    <LinearLayout
+        android:id="@+id/nav_analysis"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless">
+        
+        <ImageView
+            android:id="@+id/nav_analysis_icon"
+            android:layout_width="@dimen/bottom_nav_icon_size"
+            android:layout_height="@dimen/bottom_nav_icon_size"
+            android:src="@drawable/ic_analysis_selector"
+            app:tint="@color/bottom_nav_item_color"/>
+        <TextView
+            android:id="@+id/nav_analysis_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/nav_analysis"
+            android:textSize="@dimen/text_xs"
+            android:textStyle="bold"
+            android:textColor="@color/bottom_nav_item_color"
+            android:layout_marginTop="4dp"/>
+    </LinearLayout>
+    
+    <!-- Chat -->
+    <LinearLayout
+        android:id="@+id/nav_chat"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless">
+        
+        <ImageView
+            android:id="@+id/nav_chat_icon"
+            android:layout_width="@dimen/bottom_nav_icon_size"
+            android:layout_height="@dimen/bottom_nav_icon_size"
+            android:src="@drawable/ic_chat_selector"
+            app:tint="@color/bottom_nav_item_color"/>
+        <TextView
+            android:id="@+id/nav_chat_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/nav_chat"
+            android:textSize="@dimen/text_xs"
+            android:textStyle="bold"
+            android:textColor="@color/bottom_nav_item_color"
+            android:layout_marginTop="4dp"/>
+    </LinearLayout>
+    
+    <!-- Groups -->
+    <LinearLayout
+        android:id="@+id/nav_groups"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless">
+        
+        <ImageView
+            android:id="@+id/nav_groups_icon"
+            android:layout_width="@dimen/bottom_nav_icon_size"
+            android:layout_height="@dimen/bottom_nav_icon_size"
+            android:src="@drawable/ic_groups_selector"
+            app:tint="@color/bottom_nav_item_color"/>
+        <TextView
+            android:id="@+id/nav_groups_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/nav_groups"
+            android:textSize="@dimen/text_xs"
+            android:textStyle="bold"
+            android:textColor="@color/bottom_nav_item_color"
+            android:layout_marginTop="4dp"/>
+    </LinearLayout>
+    
+    <!-- Profile -->
+    <LinearLayout
+        android:id="@+id/nav_profile"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless">
+        
+        <ImageView
+            android:id="@+id/nav_profile_icon"
+            android:layout_width="@dimen/bottom_nav_icon_size"
+            android:layout_height="@dimen/bottom_nav_icon_size"
+            android:src="@drawable/ic_profile_selector"
+            app:tint="@color/bottom_nav_item_color"/>
+        <TextView
+            android:id="@+id/nav_profile_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/nav_profile"
+            android:textSize="@dimen/text_xs"
+            android:textStyle="bold"
+            android:textColor="@color/bottom_nav_item_color"
+            android:layout_marginTop="4dp"/>
+    </LinearLayout>
+    
+</LinearLayout>

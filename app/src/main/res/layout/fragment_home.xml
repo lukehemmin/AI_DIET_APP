@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gray_90">
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/spacing_md"
+        android:paddingEnd="@dimen/spacing_md">
+
+        <ImageView
+            android:id="@+id/btn_prev_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/spacing_md"
+            android:src="@drawable/ic_chevron_left" />
+
+        <TextView
+            android:id="@+id/txt_current_date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="오늘"
+            android:textColor="@color/gray_text"
+            android:textSize="@dimen/text_lg"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/btn_next_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/spacing_md"
+            android:src="@drawable/ic_chevron_right" />
+
+        <ImageView
+            android:id="@+id/btn_theme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/spacing_md"
+            android:src="@drawable/ic_moon" />
+
+    </LinearLayout>
+    
+    <!-- Scrollable Content -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="72dp"
+        android:paddingBottom="100dp"
+        android:fillViewport="true">
+        
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            
+            <!-- Dashboard Card -->
+            <include layout="@layout/card_dashboard"/>
+            
+            <!-- Water Intake Card -->
+            <include layout="@layout/card_water_intake"/>
+            
+            <!-- Suggestion Card -->
+            <include layout="@layout/card_suggestion"/>
+            
+            <!-- Meal Log Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_margin="@dimen/spacing_lg">
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="@dimen/spacing_md">
+                    
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="오늘의 식단 기록"
+                        android:textSize="@dimen/text_lg"
+                        android:textStyle="bold"
+                        android:textColor="@color/gray_text"/>
+                    
+                    <TextView
+                        android:id="@+id/btn_add_manual"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="수동으로 추가"
+                        android:textSize="@dimen/text_sm"
+                        android:textStyle="bold"
+                        android:textColor="@color/primary_blue"
+                        android:drawableStart="@drawable/ic_plus"
+                        android:drawablePadding="4dp"
+                        android:gravity="center_vertical"/>
+                </LinearLayout>
+                
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_meals"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"/>
+                
+                <TextView
+                    android:id="@+id/txt_empty_meals"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="아직 기록된 식단이 없습니다.\n하단 카메라 버튼 또는 수동 추가를 눌러 시작하세요."
+                    android:textSize="@dimen/text_base"
+                    android:textColor="@color/gray_subtext"
+                    android:gravity="center"
+                    android:padding="@dimen/spacing_xxxl"/>
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+    
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_add_meal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/spacing_lg"
+        android:src="@drawable/ic_plus"
+        app:tint="@color/white"
+        app:backgroundTint="@color/primary_blue"
+        app:elevation="6dp"
+        app:borderWidth="0dp"/>
+        app:borderWidth="0dp"/>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

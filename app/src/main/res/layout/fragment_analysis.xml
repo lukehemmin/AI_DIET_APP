@@ -1,0 +1,43 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/gray_90">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="분석 및 계획"
+        android:textSize="@dimen/text_xxl"
+        android:textStyle="bold"
+        android:textColor="@color/gray_text"
+        android:layout_marginTop="48dp"
+        android:layout_marginStart="@dimen/spacing_lg"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="나의 식단과 건강 상태를 분석해 보세요."
+        android:textSize="@dimen/text_base"
+        android:textColor="@color/gray_subtext"
+        android:layout_marginStart="@dimen/spacing_lg"/>
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tab_layout_analysis"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_lg"
+        android:background="@color/gray_90"
+        app:tabMode="scrollable"
+        app:tabIndicatorColor="@color/primary_blue"
+        app:tabSelectedTextColor="@color/primary_blue"
+        app:tabTextColor="@color/gray_subtext" />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager_analysis"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>

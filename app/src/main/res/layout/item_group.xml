@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_lg"
+    app:cardBackgroundColor="@color/gray_100"
+    app:cardCornerRadius="@dimen/corner_radius_lg"
+    app:cardElevation="@dimen/card_elevation">
+    
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_xl">
+        
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="@dimen/spacing_sm">
+            
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                
+                <TextView
+                    android:id="@+id/txt_group_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="여름 준비 다이어트방"
+                    android:textSize="@dimen/text_lg"
+                    android:textStyle="bold"
+                    android:textColor="@color/gray_text"
+                    android:maxLines="1"
+                    android:ellipsize="end"/>
+                
+                <TextView
+                    android:id="@+id/txt_group_members"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="👥 5명 참여중"
+                    android:textSize="@dimen/text_sm"
+                    android:textColor="@color/gray_subtext"
+                    android:layout_marginTop="4dp"/>
+            </LinearLayout>
+            
+            <TextView
+                android:id="@+id/btn_group_menu"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:text="⋮"
+                android:textSize="20sp"
+                android:textColor="@color/gray_subtext"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"/>
+        </LinearLayout>
+        
+        <!-- Challenge -->
+        <TextView
+            android:id="@+id/txt_group_challenge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="그룹 칼로리 50,000kcal 소모"
+            android:textSize="@dimen/text_base"
+            android:textStyle="bold"
+            android:textColor="@color/gray_text"
+            android:layout_marginBottom="@dimen/spacing_sm"/>
+        
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/progress_group"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:progressTint="@color/primary_blue"
+            android:progressBackgroundTint="@color/gray_70"
+            android:progress="78"
+            android:max="100"
+            android:layout_marginBottom="@dimen/spacing_xs"/>
+        
+        <!-- Progress Text -->
+        <TextView
+            android:id="@+id/txt_group_progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="78% 달성"
+            android:textSize="@dimen/text_sm"
+            android:textStyle="bold"
+            android:textColor="@color/primary_blue"
+            android:layout_gravity="end"/>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

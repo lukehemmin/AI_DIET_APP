@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary Colors (Same as light mode) -->
+    <color name="primary_blue">#0A84FF</color>
+    <color name="state_success">#34C759</color>
+    <color name="orange_500">#FF9500</color>
+    
+    <!-- Dark Mode Colors -->
+    <color name="gray_100">#1e293b</color>
+    <color name="gray_90">#0f172a</color>
+    <color name="gray_70">#334152</color>
+    <color name="gray_50">#475569</color>
+    <color name="gray_text">#e2e8f0</color>
+    <color name="gray_subtext">#94a3b8</color>
+    
+    <!-- Shadow -->
+    <color name="shadow_color">#29000000</color>
+    
+    <!-- Basic Colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>
