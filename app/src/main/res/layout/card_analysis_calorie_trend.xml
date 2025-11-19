@@ -14,19 +14,70 @@
         android:orientation="vertical"
         android:padding="@dimen/spacing_xl">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="칼로리 섭취 트렌드"
-            android:textColor="@color/gray_text"
-            android:textSize="@dimen/text_lg"
-            android:textStyle="bold" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
-        <com.github.mikephil.charting.charts.BarChart
-            android:id="@+id/chart_calorie_trend"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:text="칼로리 섭취 트렌드"
+                android:textColor="@color/gray_text"
+                android:textSize="@dimen/text_lg"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_rounded_edittext"
+                    android:paddingStart="12dp"
+                    android:paddingTop="6dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="6dp"
+                    android:text="최근 7일"
+                    android:textColor="@color/primary_blue"
+                    android:textSize="@dimen/text_sm" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:background="@drawable/bg_rounded_edittext"
+                    android:paddingStart="12dp"
+                    android:paddingTop="6dp"
+                    android:paddingEnd="12dp"
+                    android:paddingBottom="6dp"
+                    android:text="최근 30일"
+                    android:textColor="@color/gray_subtext"
+                    android:textSize="@dimen/text_sm" />
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:layout_marginTop="@dimen/spacing_md" />
+            android:layout_marginTop="@dimen/spacing_md"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="선택된 기간에 데이터가 없습니다."
+                android:textColor="@color/gray_subtext"
+                android:textSize="@dimen/text_base" />
+
+        </LinearLayout>
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

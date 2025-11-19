@@ -17,16 +17,94 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:drawableStart="@android:drawable/ic_menu_gallery"
+            android:drawablePadding="@dimen/spacing_sm"
             android:text="AI 식습관 패턴 분석"
             android:textColor="@color/gray_text"
             android:textSize="@dimen/text_lg"
             android:textStyle="bold" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="아침 평균"
+                    android:textColor="@color/gray_subtext"
+                    android:textSize="@dimen/text_sm" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0 kcal"
+                    android:textColor="@color/gray_text"
+                    android:textSize="@dimen/text_lg"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="점심 평균"
+                    android:textColor="@color/gray_subtext"
+                    android:textSize="@dimen/text_sm" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0 kcal"
+                    android:textColor="@color/gray_text"
+                    android:textSize="@dimen/text_lg"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="저녁 평균"
+                    android:textColor="@color/gray_subtext"
+                    android:textSize="@dimen/text_sm" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0 kcal"
+                    android:textColor="@color/gray_text"
+                    android:textSize="@dimen/text_lg"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_sm"
-            android:text="최근 7일간 평균적으로 저녁 식사의 칼로리가 다른 식사보다 높습니다. 저녁 식사량을 조절하면 더 균형잡힌 식단이 될 것입니다."
+            android:layout_marginTop="@dimen/spacing_md"
+            android:text="최근 기록을 분석해본 결과에요. 3일 이상 식단을 기록해주세요!"
             android:textColor="@color/gray_subtext"
             android:textSize="@dimen/text_base" />
 

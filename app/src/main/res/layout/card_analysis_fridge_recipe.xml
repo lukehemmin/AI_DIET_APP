@@ -17,17 +17,20 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawablePadding="@dimen/spacing_sm"
             android:text="냉장고 파먹기 AI 레시피"
             android:textColor="@color/gray_text"
             android:textSize="@dimen/text_lg"
             android:textStyle="bold" />
 
-        <TextView
-            android:layout_width="wrap_content"
+        <EditText
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_sm"
-            android:text="가지고 있는 재료로 만들 수 있는 레시피를 찾아보세요."
-            android:textColor="@color/gray_subtext"
+            android:background="@drawable/bg_rounded_edittext"
+            android:hint="가지고 있는 재료를 입력해보세요. (예: 닭가슴살, 양파, 계란, 우유)"
+            android:padding="@dimen/spacing_md"
             android:textSize="@dimen/text_base" />
 
         <Button
@@ -40,8 +43,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/spacing_xs"
-            android:text="재료를 등록하고 AI를 통해 맞춤 레시피를 생성해 보세요!"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:text="재료를 입력하고 버튼을 누르면 AI가 맞춤 레시피를 만들어드려요!"
             android:textColor="@color/gray_subtext"
             android:textSize="@dimen/text_sm" />
 

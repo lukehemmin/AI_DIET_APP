@@ -22,7 +22,7 @@
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_robot" />
+                android:src="@android:drawable/ic_menu_myplaces" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -38,7 +38,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_sm"
-            android:text="주 3회 유산소 운동으로 체지방을 감량해 보세요!"
+            android:text="모든 그룹을 불러오는 데 실패했습니다."
             android:textColor="@color/gray_subtext"
             android:textSize="@dimen/text_base" />
 

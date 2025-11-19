@@ -17,6 +17,8 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:drawableStart="@android:drawable/ic_menu_myplaces"
+            android:drawablePadding="@dimen/spacing_sm"
             android:text="AI 식습관 분석"
             android:textColor="@color/gray_text"
             android:textSize="@dimen/text_lg"
@@ -26,7 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_sm"
-            android:text="AI가 식습관을 분석하여 개선점을 제안합니다."
+            android:text="손쉽게 식단을 기록하여 식습관을 분석할 수 있습니다. 기록이 부족하여 분석이 어려우니 식단을 기록해주세요!"
             android:textColor="@color/gray_subtext"
             android:textSize="@dimen/text_base" />
 
