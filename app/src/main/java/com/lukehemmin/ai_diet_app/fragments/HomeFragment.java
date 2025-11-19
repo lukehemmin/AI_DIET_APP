@@ -32,10 +32,12 @@ public class HomeFragment extends Fragment {
     private TextView txtWaterCount, txtEmptyMeals, btnAddManual;
     private ProgressBar progressCalorie;
     private RecyclerView rvMeals;
-    private FloatingActionButton fabAddMeal;
+    private FloatingActionButton fabAddMeal, fabCamera, fabGallery;
+    private TextView txtCameraLabel, txtGalleryLabel;
     private ImageView btnPrevDate, btnNextDate;
     private LinearLayout waterGlassesContainer;
     private PieChart pieChart;
+    private boolean isFabOpen = false;
 
     // Water glass indicators
     private TextView[] waterGlasses;
@@ -82,10 +84,17 @@ public class HomeFragment extends Fragment {
         rvMeals = view.findViewById(R.id.rv_meals);
         txtEmptyMeals = view.findViewById(R.id.txt_empty_meals);
         btnAddManual = view.findViewById(R.id.btn_add_manual);
-        fabAddMeal = view.findViewById(R.id.fab_add_meal);
+        fabAddMeal = view.findViewById(R.id.fab_main);
+        fabCamera = view.findViewById(R.id.fab_camera);
+        fabGallery = view.findViewById(R.id.fab_gallery);
+        txtCameraLabel = view.findViewById(R.id.txt_camera_label);
+        txtGalleryLabel = view.findViewById(R.id.txt_gallery_label);
 
         // Setup RecyclerView
         rvMeals.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        // Initial FAB state
+        closeFabMenu();
     }
 
     private void setupListeners(View view) {
@@ -93,8 +102,24 @@ public class HomeFragment extends Fragment {
         view.findViewById(R.id.btn_water_plus).setOnClickListener(v -> updateWaterIntake(1));
         
         btnAddManual.setOnClickListener(v -> openManualAddModal());
-        fabAddMeal.setOnClickListener(v -> openCameraOrGallery());
+        fabAddMeal.setOnClickListener(v -> {
+            if (isFabOpen) {
+                closeFabMenu();
+            } else {
+                showFabMenu();
+            }
+        });
         
+        fabCamera.setOnClickListener(v -> {
+            openCameraOrGallery();
+            closeFabMenu();
+        });
+
+        fabGallery.setOnClickListener(v -> {
+            openCameraOrGallery();
+            closeFabMenu();
+        });
+
         btnPrevDate.setOnClickListener(v -> navigateDate(-1));
         btnNextDate.setOnClickListener(v -> navigateDate(1));
     }
@@ -152,6 +177,37 @@ public class HomeFragment extends Fragment {
 
     private void navigateDate(int delta) {
         // TODO: Implement date navigation
+    }
+
+    private void showFabMenu() {
+        isFabOpen = true;
+        fabAddMeal.setImageResource(R.drawable.ic_plus_circle); // Change to close icon
+
+        fabCamera.setVisibility(View.VISIBLE);
+        txtCameraLabel.setVisibility(View.VISIBLE);
+        fabGallery.setVisibility(View.VISIBLE);
+        txtGalleryLabel.setVisibility(View.VISIBLE);
+
+        fabCamera.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_1));
+        txtCameraLabel.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_1));
+        fabGallery.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_2));
+        txtGalleryLabel.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_2));
+    }
+
+    private void closeFabMenu() {
+        isFabOpen = false;
+        fabAddMeal.setImageResource(R.drawable.ic_plus);
+
+        fabCamera.animate().translationY(0);
+        txtCameraLabel.animate().translationY(0).withEndAction(() -> {
+            fabCamera.setVisibility(View.GONE);
+            txtCameraLabel.setVisibility(View.GONE);
+        });
+
+        fabGallery.animate().translationY(0).withEndAction(() -> {
+            fabGallery.setVisibility(View.GONE);
+            txtGalleryLabel.setVisibility(View.GONE);
+        });
     }
 
     private void updateCalorieProgress(int currentKcal, int goalKcal) {

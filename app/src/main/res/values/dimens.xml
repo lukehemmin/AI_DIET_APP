@@ -42,4 +42,8 @@
     
     <!-- Card Elevation -->
     <dimen name="card_elevation">4dp</dimen>
+
+    <!-- FAB Speed Dial -->
+    <dimen name="fab_margin_1">72dp</dimen>
+    <dimen name="fab_margin_2">128dp</dimen>
 </resources>
