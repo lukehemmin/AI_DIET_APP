@@ -1,6 +1,10 @@
 package com.lukehemmin.ai_diet_app.fragments;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,7 +12,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -38,6 +45,28 @@ public class HomeFragment extends Fragment {
     private LinearLayout waterGlassesContainer;
     private PieChart pieChart;
     private boolean isFabOpen = false;
+
+    // Camera & Gallery Launchers
+    private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Toast.makeText(getContext(), "사진이 촬영되었습니다.", Toast.LENGTH_SHORT).show();
+                    // TODO: 촬영된 이미지 처리 (result.getData())
+                }
+            }
+    );
+
+    private final ActivityResultLauncher<Intent> galleryLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Uri selectedImage = result.getData().getData();
+                    Toast.makeText(getContext(), "사진이 선택되었습니다.", Toast.LENGTH_SHORT).show();
+                    // TODO: 선택된 이미지 처리 (selectedImage)
+                }
+            }
+    );
 
     // Water glass indicators
     private TextView[] waterGlasses;
@@ -111,12 +140,18 @@ public class HomeFragment extends Fragment {
         });
         
         fabCamera.setOnClickListener(v -> {
-            openCameraOrGallery();
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            try {
+                cameraLauncher.launch(intent);
+            } catch (Exception e) {
+                Toast.makeText(getContext(), "카메라를 실행할 수 없습니다.", Toast.LENGTH_SHORT).show();
+            }
             closeFabMenu();
         });
 
         fabGallery.setOnClickListener(v -> {
-            openCameraOrGallery();
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            galleryLauncher.launch(intent);
             closeFabMenu();
         });
 
@@ -169,10 +204,6 @@ public class HomeFragment extends Fragment {
 
     private void openManualAddModal() {
         // TODO: Implement manual add modal
-    }
-
-    private void openCameraOrGallery() {
-        // TODO: Implement camera/gallery picker
     }
 
     private void navigateDate(int delta) {
