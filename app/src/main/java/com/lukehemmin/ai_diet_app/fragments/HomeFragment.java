@@ -184,14 +184,10 @@ public class HomeFragment extends Fragment {
         fabAddMeal.setImageResource(R.drawable.ic_plus_circle); // Change to close icon
 
         fabCamera.setVisibility(View.VISIBLE);
-        txtCameraLabel.setVisibility(View.VISIBLE);
         fabGallery.setVisibility(View.VISIBLE);
-        txtGalleryLabel.setVisibility(View.VISIBLE);
 
         fabCamera.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_1));
-        txtCameraLabel.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_1));
         fabGallery.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_2));
-        txtGalleryLabel.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_2));
     }
 
     private void closeFabMenu() {
