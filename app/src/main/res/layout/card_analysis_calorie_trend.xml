@@ -63,21 +63,11 @@
 
         </RelativeLayout>
 
-        <LinearLayout
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/chart_calorie_trend"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:layout_marginTop="@dimen/spacing_md"
-            android:gravity="center"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="선택된 기간에 데이터가 없습니다."
-                android:textColor="@color/gray_subtext"
-                android:textSize="@dimen/text_base" />
-
-        </LinearLayout>
+            android:layout_marginTop="@dimen/spacing_md" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>
