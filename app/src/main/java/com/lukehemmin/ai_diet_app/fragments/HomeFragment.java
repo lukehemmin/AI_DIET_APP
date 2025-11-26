@@ -53,7 +53,7 @@ public class HomeFragment extends Fragment {
     private TextView txtCurrentKcal, txtGoalKcal, txtCurrentDate;
     private TextView txtCarbsLegend, txtProteinLegend, txtFatLegend;
 
-    private TextView txtWaterCount, txtEmptyMeals, btnAddManual;
+    private TextView txtWaterCount, txtEmptyMeals, btnAddManual, btnHealthReport;
     private ProgressBar progressCalorie;
     private RecyclerView rvMeals;
     private FloatingActionButton fabAddMeal, fabCamera, fabGallery;
@@ -136,6 +136,7 @@ public class HomeFragment extends Fragment {
         fabGallery = view.findViewById(R.id.fab_gallery);
         txtCameraLabel = view.findViewById(R.id.txt_camera_label);
         txtGalleryLabel = view.findViewById(R.id.txt_gallery_label);
+        btnHealthReport = view.findViewById(R.id.suggestion_cta);
 
         // Setup RecyclerView
         rvMeals.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -173,6 +174,10 @@ public class HomeFragment extends Fragment {
             closeFabMenu();
         });
 
+        if (btnHealthReport != null) {
+            btnHealthReport.setOnClickListener(v -> openHealthReport());
+        }
+
         btnPrevDate.setOnClickListener(v -> navigateDate(-1));
         btnNextDate.setOnClickListener(v -> navigateDate(1));
         
@@ -206,6 +211,11 @@ public class HomeFragment extends Fragment {
         return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR) &&
                c1.get(Calendar.MONTH) == c2.get(Calendar.MONTH) &&
                c1.get(Calendar.DAY_OF_MONTH) == c2.get(Calendar.DAY_OF_MONTH);
+    }
+
+    private void openHealthReport() {
+        Intent intent = new Intent(getContext(), com.lukehemmin.ai_diet_app.HealthReportActivity.class);
+        startActivity(intent);
     }
 
     private void showCalendarDialog() {
