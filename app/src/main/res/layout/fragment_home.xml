@@ -38,13 +38,6 @@
             android:padding="@dimen/spacing_md"
             android:src="@drawable/ic_chevron_right" />
 
-        <ImageView
-            android:id="@+id/btn_theme"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:padding="@dimen/spacing_md"
-            android:src="@drawable/ic_moon" />
-
     </LinearLayout>
     
     <!-- Scrollable Content -->

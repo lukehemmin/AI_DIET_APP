@@ -1,13 +1,21 @@
 package com.lukehemmin.ai_diet_app.fragments;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.CalendarView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -19,6 +27,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -29,9 +38,17 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.lukehemmin.ai_diet_app.R;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
 
 public class HomeFragment extends Fragment {
+
+    interface OnDateSelectedListener {
+        void onDateSelected(Calendar date);
+    }
 
     private TextView txtCurrentKcal, txtGoalKcal, txtCurrentDate;
     private TextView txtCarbsLegend, txtProteinLegend, txtFatLegend;
@@ -157,6 +174,148 @@ public class HomeFragment extends Fragment {
 
         btnPrevDate.setOnClickListener(v -> navigateDate(-1));
         btnNextDate.setOnClickListener(v -> navigateDate(1));
+        txtCurrentDate.setOnClickListener(v -> showCalendarDialog());
+    }
+
+    private void showCalendarDialog() {
+        final Dialog dialog = new Dialog(getContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_calendar);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        dialog.getWindow().setGravity(Gravity.CENTER);
+
+        Calendar currentCalendar = Calendar.getInstance(); // TODO: Use currently selected date
+        
+        TextView txtMonthYear = dialog.findViewById(R.id.txt_cal_month_year);
+        ImageView btnPrev = dialog.findViewById(R.id.btn_cal_prev);
+        ImageView btnNext = dialog.findViewById(R.id.btn_cal_next);
+        ImageView btnClose = dialog.findViewById(R.id.btn_cal_close);
+        RecyclerView rvDays = dialog.findViewById(R.id.rv_calendar_days);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy년 M월", Locale.KOREA);
+        txtMonthYear.setText(sdf.format(currentCalendar.getTime()));
+
+        CalendarAdapter adapter = new CalendarAdapter(currentCalendar, date -> {
+            // TODO: Handle date selection
+            txtCurrentDate.setText(new SimpleDateFormat("M월 d일", Locale.KOREA).format(date.getTime()));
+            dialog.dismiss();
+        });
+        rvDays.setLayoutManager(new GridLayoutManager(getContext(), 7));
+        rvDays.setAdapter(adapter);
+
+        btnPrev.setOnClickListener(v -> {
+            currentCalendar.add(Calendar.MONTH, -1);
+            txtMonthYear.setText(sdf.format(currentCalendar.getTime()));
+            adapter.updateMonth(currentCalendar);
+        });
+
+        btnNext.setOnClickListener(v -> {
+            currentCalendar.add(Calendar.MONTH, 1);
+            txtMonthYear.setText(sdf.format(currentCalendar.getTime()));
+            adapter.updateMonth(currentCalendar);
+        });
+
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    private class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder> {
+        private Calendar calendar;
+        private final OnDateSelectedListener listener;
+        private final List<Calendar> days = new ArrayList<>();
+        private Calendar selectedDate;
+
+        public CalendarAdapter(Calendar calendar, OnDateSelectedListener listener) {
+            this.calendar = (Calendar) calendar.clone();
+            this.selectedDate = Calendar.getInstance(); // Default to today
+            this.listener = listener;
+            generateDays();
+        }
+
+        public void updateMonth(Calendar calendar) {
+            this.calendar = (Calendar) calendar.clone();
+            generateDays();
+            notifyDataSetChanged();
+        }
+
+        private void generateDays() {
+            days.clear();
+            Calendar temp = (Calendar) calendar.clone();
+            temp.set(Calendar.DAY_OF_MONTH, 1);
+            
+            int firstDayOfWeek = temp.get(Calendar.DAY_OF_WEEK); // 1 (Sun) to 7 (Sat)
+            int maxDays = temp.getActualMaximum(Calendar.DAY_OF_MONTH);
+            
+            // Add empty days for offset
+            for (int i = 1; i < firstDayOfWeek; i++) {
+                days.add(null);
+            }
+            
+            // Add days of the month
+            for (int i = 1; i <= maxDays; i++) {
+                Calendar day = (Calendar) temp.clone();
+                day.set(Calendar.DAY_OF_MONTH, i);
+                days.add(day);
+            }
+        }
+
+        @NonNull
+        @Override
+        public CalendarViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_calendar_day, parent, false);
+            return new CalendarViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull CalendarViewHolder holder, int position) {
+            Calendar day = days.get(position);
+            if (day == null) {
+                holder.txtDay.setText("");
+                holder.txtDay.setOnClickListener(null);
+                holder.txtDay.setSelected(false);
+            } else {
+                int dayOfMonth = day.get(Calendar.DAY_OF_MONTH);
+                holder.txtDay.setText(String.valueOf(dayOfMonth));
+                
+                // Check if selected
+                boolean isSelected = isSameDay(day, selectedDate);
+                holder.txtDay.setSelected(isSelected);
+                if (isSelected) {
+                    holder.txtDay.setTextColor(Color.WHITE);
+                    holder.txtDay.setTypeface(null, Typeface.BOLD);
+                } else {
+                    holder.txtDay.setTextColor(getContext().getColor(R.color.gray_text));
+                    holder.txtDay.setTypeface(null, Typeface.NORMAL);
+                }
+                
+                holder.txtDay.setOnClickListener(v -> {
+                    selectedDate = day;
+                    listener.onDateSelected(day);
+                });
+            }
+        }
+
+        private boolean isSameDay(Calendar c1, Calendar c2) {
+            return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR) &&
+                   c1.get(Calendar.MONTH) == c2.get(Calendar.MONTH) &&
+                   c1.get(Calendar.DAY_OF_MONTH) == c2.get(Calendar.DAY_OF_MONTH);
+        }
+
+        @Override
+        public int getItemCount() {
+            return days.size();
+        }
+
+        class CalendarViewHolder extends RecyclerView.ViewHolder {
+            TextView txtDay;
+
+            CalendarViewHolder(View itemView) {
+                super(itemView);
+                txtDay = itemView.findViewById(R.id.txt_day);
+            }
+        }
     }
 
     private void loadInitialData() {
