@@ -24,17 +24,6 @@
             android:textStyle="bold"
             android:textColor="@color/gray_text"
             android:gravity="center"/>
-        
-        <TextView
-            android:id="@+id/btn_theme_chat"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:text="🌙"
-            android:textSize="20sp"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackgroundBorderless"/>
     </LinearLayout>
     
     <!-- Chat Header -->
@@ -96,16 +85,16 @@
             android:minHeight="48dp"
             android:maxLines="4"/>
         
-        <TextView
+        <ImageView
             android:id="@+id/btn_send_message"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:text="✈️"
-            android:textSize="24sp"
-            android:gravity="center"
+            android:src="@drawable/ic_send"
+            android:padding="12dp"
             android:layout_marginStart="@dimen/spacing_sm"
             android:background="@drawable/bg_send_button"
             android:clickable="true"
-            android:focusable="true"/>
+            android:focusable="true"
+            android:contentDescription="전송"/>
     </LinearLayout>
 </LinearLayout>
