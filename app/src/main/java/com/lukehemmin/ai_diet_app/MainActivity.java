@@ -22,6 +22,8 @@ import com.lukehemmin.ai_diet_app.fragments.ProfileFragment;
 public class MainActivity extends AppCompatActivity {
 
     private LinearLayout navHome, navAnalysis, navChat, navGroups, navProfile;
+    private Fragment homeFragment, analysisFragment, chatFragment, groupsFragment, profileFragment;
+    private Fragment activeFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +41,11 @@ public class MainActivity extends AppCompatActivity {
         
         // Load initial fragment
         if (savedInstanceState == null) {
-            loadFragment(new HomeFragment());
+            homeFragment = new HomeFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.fragment_container, homeFragment)
+                    .commit();
+            activeFragment = homeFragment;
             setActiveNavItem(navHome);
         }
     }
@@ -52,36 +58,53 @@ public class MainActivity extends AppCompatActivity {
         navProfile = findViewById(R.id.nav_profile);
 
         navHome.setOnClickListener(v -> {
-            loadFragment(new HomeFragment());
+            if (homeFragment == null) homeFragment = new HomeFragment();
+            showFragment(homeFragment);
             setActiveNavItem(navHome);
         });
 
         navAnalysis.setOnClickListener(v -> {
-            loadFragment(new AnalysisFragment());
+            if (analysisFragment == null) analysisFragment = new AnalysisFragment();
+            showFragment(analysisFragment);
             setActiveNavItem(navAnalysis);
         });
 
         navChat.setOnClickListener(v -> {
-            loadFragment(new ChatFragment());
+            if (chatFragment == null) chatFragment = new ChatFragment();
+            showFragment(chatFragment);
             setActiveNavItem(navChat);
         });
 
         navGroups.setOnClickListener(v -> {
-            loadFragment(new GroupsFragment());
+            if (groupsFragment == null) groupsFragment = new GroupsFragment();
+            showFragment(groupsFragment);
             setActiveNavItem(navGroups);
         });
 
         navProfile.setOnClickListener(v -> {
-            loadFragment(new ProfileFragment());
+            if (profileFragment == null) profileFragment = new ProfileFragment();
+            showFragment(profileFragment);
             setActiveNavItem(navProfile);
         });
     }
 
-    private void loadFragment(Fragment fragment) {
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .commit();
+    private void showFragment(Fragment fragment) {
+        if (fragment == activeFragment) return;
+
+        androidx.fragment.app.FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+
+        if (!fragment.isAdded()) {
+            transaction.add(R.id.fragment_container, fragment);
+        } else {
+            transaction.show(fragment);
+        }
+
+        if (activeFragment != null) {
+            transaction.hide(activeFragment);
+        }
+
+        transaction.commit();
+        activeFragment = fragment;
     }
 
     private void setActiveNavItem(LinearLayout activeNav) {

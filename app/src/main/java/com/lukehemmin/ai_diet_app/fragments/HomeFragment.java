@@ -1,12 +1,15 @@
 package com.lukehemmin.ai_diet_app.fragments;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.Gravity;
@@ -26,6 +29,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -64,6 +68,29 @@ public class HomeFragment extends Fragment {
     private boolean isFabOpen = false;
     private Calendar currentSelectedDate = Calendar.getInstance();
 
+    // Permission Launchers
+    private final ActivityResultLauncher<String> requestCameraPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            isGranted -> {
+                if (isGranted) {
+                    openCamera();
+                } else {
+                    Toast.makeText(getContext(), "카메라 권한이 필요합니다.", Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
+
+    private final ActivityResultLauncher<String> requestGalleryPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            isGranted -> {
+                if (isGranted) {
+                    openGallery();
+                } else {
+                    Toast.makeText(getContext(), "갤러리 접근 권한이 필요합니다.", Toast.LENGTH_SHORT).show();
+                }
+            }
+    );
+
     // Camera & Gallery Launchers
     private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -87,7 +114,6 @@ public class HomeFragment extends Fragment {
     );
 
     // Water glass indicators
-    private TextView[] waterGlasses;
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
@@ -113,13 +139,6 @@ public class HomeFragment extends Fragment {
 
         // Header
         txtCurrentDate = view.findViewById(R.id.txt_current_date);
-        btnPrevDate = view.findViewById(R.id.btn_prev_date);
-        btnNextDate = view.findViewById(R.id.btn_next_date);
-
-        // Water intake
-        txtWaterCount = view.findViewById(R.id.txt_water_count);
-        btnPrevDate = view.findViewById(R.id.btn_prev_date);
-        btnNextDate = view.findViewById(R.id.btn_next_date);
         btnPrevDate = view.findViewById(R.id.btn_prev_date);
         btnNextDate = view.findViewById(R.id.btn_next_date);
 
@@ -159,18 +178,23 @@ public class HomeFragment extends Fragment {
         });
         
         fabCamera.setOnClickListener(v -> {
-            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-            try {
-                cameraLauncher.launch(intent);
-            } catch (Exception e) {
-                Toast.makeText(getContext(), "카메라를 실행할 수 없습니다.", Toast.LENGTH_SHORT).show();
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                openCamera();
+            } else {
+                requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
             }
             closeFabMenu();
         });
 
         fabGallery.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            galleryLauncher.launch(intent);
+            String permission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ?
+                    Manifest.permission.READ_MEDIA_IMAGES : Manifest.permission.READ_EXTERNAL_STORAGE;
+
+            if (ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED) {
+                openGallery();
+            } else {
+                requestGalleryPermissionLauncher.launch(permission);
+            }
             closeFabMenu();
         });
 
@@ -225,6 +249,20 @@ public class HomeFragment extends Fragment {
         startActivity(intent);
     }
 
+    private void openCamera() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        try {
+            cameraLauncher.launch(intent);
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "카메라를 실행할 수 없습니다.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openGallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        galleryLauncher.launch(intent);
+    }
+
     private void showCalendarDialog() {
         final Dialog dialog = new Dialog(getContext());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -244,7 +282,7 @@ public class HomeFragment extends Fragment {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy년 M월", Locale.KOREA);
         txtMonthYear.setText(sdf.format(currentCalendar.getTime()));
 
-        CalendarAdapter adapter = new CalendarAdapter(currentCalendar, date -> {
+        CalendarAdapter adapter = new CalendarAdapter(currentCalendar, currentSelectedDate, date -> {
             updateDateDisplay(date);
             dialog.dismiss();
         });
@@ -274,9 +312,9 @@ public class HomeFragment extends Fragment {
         private final List<Calendar> days = new ArrayList<>();
         private Calendar selectedDate;
 
-        public CalendarAdapter(Calendar calendar, OnDateSelectedListener listener) {
+        public CalendarAdapter(Calendar calendar, Calendar selectedDate, OnDateSelectedListener listener) {
             this.calendar = (Calendar) calendar.clone();
-            this.selectedDate = Calendar.getInstance(); // Default to today
+            this.selectedDate = (Calendar) selectedDate.clone();
             this.listener = listener;
             generateDays();
         }
@@ -348,6 +386,7 @@ public class HomeFragment extends Fragment {
 
                     holder.txtDay.setOnClickListener(v -> {
                         selectedDate = day;
+                        notifyDataSetChanged(); // Refresh UI to update selection
                         listener.onDateSelected(day);
                     });
                 }
@@ -453,25 +492,25 @@ public class HomeFragment extends Fragment {
 
         fabCamera.setVisibility(View.VISIBLE);
         fabGallery.setVisibility(View.VISIBLE);
+        txtCameraLabel.setVisibility(View.VISIBLE);
+        txtGalleryLabel.setVisibility(View.VISIBLE);
 
         fabCamera.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_1));
+        txtCameraLabel.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_1));
+        
         fabGallery.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_2));
+        txtGalleryLabel.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_2));
     }
 
     private void closeFabMenu() {
         isFabOpen = false;
         fabAddMeal.setImageResource(R.drawable.ic_plus);
 
-        fabCamera.animate().translationY(0);
-        txtCameraLabel.animate().translationY(0).withEndAction(() -> {
-            fabCamera.setVisibility(View.GONE);
-            txtCameraLabel.setVisibility(View.GONE);
-        });
+        fabCamera.animate().translationY(0).withEndAction(() -> fabCamera.setVisibility(View.GONE));
+        txtCameraLabel.animate().translationY(0).withEndAction(() -> txtCameraLabel.setVisibility(View.GONE));
 
-        fabGallery.animate().translationY(0).withEndAction(() -> {
-            fabGallery.setVisibility(View.GONE);
-            txtGalleryLabel.setVisibility(View.GONE);
-        });
+        fabGallery.animate().translationY(0).withEndAction(() -> fabGallery.setVisibility(View.GONE));
+        txtGalleryLabel.animate().translationY(0).withEndAction(() -> txtGalleryLabel.setVisibility(View.GONE));
     }
 
     private void updateCalorieProgress(int currentKcal, int goalKcal) {

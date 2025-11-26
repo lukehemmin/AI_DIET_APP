@@ -110,12 +110,23 @@ public class AnalysisDietFragment extends Fragment {
             {R.id.cell_d_1, R.id.cell_d_2, R.id.cell_d_3, R.id.cell_d_4, R.id.cell_d_5, R.id.cell_d_6, R.id.cell_d_7}
         };
 
-        for (int[] row : cellIds) {
-            for (int id : row) {
-                View cell = view.findViewById(id);
+        // Simulated data: true if meal was logged, false otherwise
+        // Rows: Breakfast, Lunch, Dinner
+        // Cols: Mon, Tue, Wed, Thu, Fri, Sat, Sun
+        boolean[][] mealHistory = {
+            {true, true, false, true, true, true, false},
+            {true, true, true, true, false, true, true},
+            {false, true, true, false, true, true, true}
+        };
+
+        for (int i = 0; i < cellIds.length; i++) {
+            for (int j = 0; j < cellIds[i].length; j++) {
+                View cell = view.findViewById(cellIds[i][j]);
                 if (cell != null) {
-                    if (Math.random() > 0.5) {
+                    if (mealHistory[i][j]) {
                         cell.setBackgroundColor(getContext().getColor(R.color.primary_blue));
+                    } else {
+                        cell.setBackgroundColor(getContext().getColor(R.color.gray_70)); // Default/Empty color
                     }
                 }
             }
