@@ -195,8 +195,10 @@ public class HomeFragment extends Fragment {
         currentSelectedDate = (Calendar) date.clone();
         if (isSameDay(date, Calendar.getInstance())) {
             txtCurrentDate.setText("오늘");
+            btnNextDate.setVisibility(View.INVISIBLE);
         } else {
             txtCurrentDate.setText(new SimpleDateFormat("M월 d일", Locale.KOREA).format(date.getTime()));
+            btnNextDate.setVisibility(View.VISIBLE);
         }
     }
 
@@ -306,22 +308,32 @@ public class HomeFragment extends Fragment {
             } else {
                 int dayOfMonth = day.get(Calendar.DAY_OF_MONTH);
                 holder.txtDay.setText(String.valueOf(dayOfMonth));
-                
-                // Check if selected
+
+                boolean isFuture = isFutureDate(day);
                 boolean isSelected = isSameDay(day, selectedDate);
-                holder.txtDay.setSelected(isSelected);
-                if (isSelected) {
-                    holder.txtDay.setTextColor(Color.WHITE);
-                    holder.txtDay.setTypeface(null, Typeface.BOLD);
-                } else {
-                    holder.txtDay.setTextColor(getContext().getColor(R.color.gray_text));
+
+                if (isFuture) {
+                    holder.txtDay.setTextColor(getContext().getColor(R.color.gray_subtext));
                     holder.txtDay.setTypeface(null, Typeface.NORMAL);
+                    holder.txtDay.setOnClickListener(null);
+                    holder.txtDay.setBackgroundResource(0);
+                    holder.txtDay.setSelected(false);
+                } else {
+                    // Check if selected
+                    holder.txtDay.setSelected(isSelected);
+                    if (isSelected) {
+                        holder.txtDay.setTextColor(Color.WHITE);
+                        holder.txtDay.setTypeface(null, Typeface.BOLD);
+                    } else {
+                        holder.txtDay.setTextColor(getContext().getColor(R.color.gray_text));
+                        holder.txtDay.setTypeface(null, Typeface.NORMAL);
+                    }
+
+                    holder.txtDay.setOnClickListener(v -> {
+                        selectedDate = day;
+                        listener.onDateSelected(day);
+                    });
                 }
-                
-                holder.txtDay.setOnClickListener(v -> {
-                    selectedDate = day;
-                    listener.onDateSelected(day);
-                });
             }
         }
 
@@ -394,9 +406,28 @@ public class HomeFragment extends Fragment {
     }
 
     private void navigateDate(int delta) {
+        Calendar nextDate = (Calendar) currentSelectedDate.clone();
+        nextDate.add(Calendar.DAY_OF_MONTH, delta);
+        
+        if (isFutureDate(nextDate)) {
+            Toast.makeText(getContext(), "미래의 날짜는 선택할 수 없습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         currentSelectedDate.add(Calendar.DAY_OF_MONTH, delta);
         updateDateDisplay(currentSelectedDate);
         // TODO: Load data for the new date
+    }
+
+    private boolean isFutureDate(Calendar date) {
+        Calendar today = Calendar.getInstance();
+        if (date.get(Calendar.YEAR) > today.get(Calendar.YEAR)) return true;
+        if (date.get(Calendar.YEAR) < today.get(Calendar.YEAR)) return false;
+        
+        if (date.get(Calendar.MONTH) > today.get(Calendar.MONTH)) return true;
+        if (date.get(Calendar.MONTH) < today.get(Calendar.MONTH)) return false;
+        
+        return date.get(Calendar.DAY_OF_MONTH) > today.get(Calendar.DAY_OF_MONTH);
     }
 
     private void showFabMenu() {
