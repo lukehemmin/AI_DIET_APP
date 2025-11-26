@@ -62,6 +62,7 @@ public class HomeFragment extends Fragment {
     private LinearLayout waterGlassesContainer;
     private PieChart pieChart;
     private boolean isFabOpen = false;
+    private Calendar currentSelectedDate = Calendar.getInstance();
 
     // Camera & Gallery Launchers
     private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
@@ -174,7 +175,35 @@ public class HomeFragment extends Fragment {
 
         btnPrevDate.setOnClickListener(v -> navigateDate(-1));
         btnNextDate.setOnClickListener(v -> navigateDate(1));
-        txtCurrentDate.setOnClickListener(v -> showCalendarDialog());
+        
+        txtCurrentDate.setOnClickListener(v -> {
+            if (isSameDay(currentSelectedDate, Calendar.getInstance())) {
+                showCalendarDialog();
+            } else {
+                updateDateDisplay(Calendar.getInstance());
+                // TODO: Load data for today
+            }
+        });
+
+        txtCurrentDate.setOnLongClickListener(v -> {
+            showCalendarDialog();
+            return true;
+        });
+    }
+
+    private void updateDateDisplay(Calendar date) {
+        currentSelectedDate = (Calendar) date.clone();
+        if (isSameDay(date, Calendar.getInstance())) {
+            txtCurrentDate.setText("오늘");
+        } else {
+            txtCurrentDate.setText(new SimpleDateFormat("M월 d일", Locale.KOREA).format(date.getTime()));
+        }
+    }
+
+    private boolean isSameDay(Calendar c1, Calendar c2) {
+        return c1.get(Calendar.YEAR) == c2.get(Calendar.YEAR) &&
+               c1.get(Calendar.MONTH) == c2.get(Calendar.MONTH) &&
+               c1.get(Calendar.DAY_OF_MONTH) == c2.get(Calendar.DAY_OF_MONTH);
     }
 
     private void showCalendarDialog() {
@@ -185,7 +214,7 @@ public class HomeFragment extends Fragment {
         dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         dialog.getWindow().setGravity(Gravity.CENTER);
 
-        Calendar currentCalendar = Calendar.getInstance(); // TODO: Use currently selected date
+        Calendar currentCalendar = (Calendar) currentSelectedDate.clone();
         
         TextView txtMonthYear = dialog.findViewById(R.id.txt_cal_month_year);
         ImageView btnPrev = dialog.findViewById(R.id.btn_cal_prev);
@@ -197,8 +226,7 @@ public class HomeFragment extends Fragment {
         txtMonthYear.setText(sdf.format(currentCalendar.getTime()));
 
         CalendarAdapter adapter = new CalendarAdapter(currentCalendar, date -> {
-            // TODO: Handle date selection
-            txtCurrentDate.setText(new SimpleDateFormat("M월 d일", Locale.KOREA).format(date.getTime()));
+            updateDateDisplay(date);
             dialog.dismiss();
         });
         rvDays.setLayoutManager(new GridLayoutManager(getContext(), 7));
@@ -366,7 +394,9 @@ public class HomeFragment extends Fragment {
     }
 
     private void navigateDate(int delta) {
-        // TODO: Implement date navigation
+        currentSelectedDate.add(Calendar.DAY_OF_MONTH, delta);
+        updateDateDisplay(currentSelectedDate);
+        // TODO: Load data for the new date
     }
 
     private void showFabMenu() {
