@@ -18,7 +18,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="나의 식단과 건강 상태를 분석해 보세요."
+        android:text="나의 식습관과 성장 과정을 확인해보세요."
         android:textSize="@dimen/text_base"
         android:textColor="@color/gray_subtext"
         android:layout_marginStart="@dimen/spacing_lg"/>

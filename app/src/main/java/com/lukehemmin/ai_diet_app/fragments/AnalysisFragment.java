@@ -42,7 +42,7 @@ public class AnalysisFragment extends Fragment {
                     tab.setText("식단분석");
                     break;
                 case 1:
-                    tab.setText("AI 식단 추천");
+                    tab.setText("AI 식단 플래너");
                     break;
                 case 2:
                     tab.setText("챌린지 및 업적");

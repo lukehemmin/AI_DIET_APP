@@ -82,7 +82,7 @@ public class AnalysisDietFragment extends Fragment {
         radarChart.getDescription().setEnabled(false);
         radarChart.getLegend().setEnabled(false);
         radarChart.getYAxis().setEnabled(false);
-        radarChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(new String[]{"탄", "단", "지"}));
+        radarChart.getXAxis().setValueFormatter(new IndexAxisValueFormatter(new String[]{"탄수화물", "단백질", "지방"}));
     }
 
     private void updateRadarChart() {

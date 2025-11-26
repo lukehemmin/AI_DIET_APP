@@ -17,12 +17,13 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawableStart="@drawable/ic_fridge"
             android:drawablePadding="@dimen/spacing_sm"
             android:text="냉장고 파먹기 AI 레시피"
             android:textColor="@color/gray_text"
             android:textSize="@dimen/text_lg"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:gravity="center_vertical" />
 
         <EditText
             android:layout_width="match_parent"
@@ -38,6 +39,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/spacing_md"
             android:text="나만의 레시피 생성하기"
+            android:drawableStart="@drawable/ic_sparkles_white"
+            android:drawablePadding="@dimen/spacing_sm"
             android:backgroundTint="@color/primary_blue" />
 
         <TextView

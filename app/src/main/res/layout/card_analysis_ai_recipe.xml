@@ -24,19 +24,23 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:drawableStart="@android:drawable/ic_dialog_email"
+                android:drawableStart="@drawable/ic_chef_hat"
                 android:drawablePadding="@dimen/spacing_sm"
                 android:text="AI 맞춤 레시피"
                 android:textColor="@color/gray_text"
                 android:textSize="@dimen/text_lg"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:gravity="center_vertical" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:drawableStart="@drawable/ic_refresh_blue"
+                android:drawablePadding="@dimen/spacing_xs"
                 android:text="다른 레시피 추천"
                 android:textColor="@color/primary_blue"
-                android:textSize="@dimen/text_sm" />
+                android:textSize="@dimen/text_sm"
+                android:gravity="center_vertical" />
         </LinearLayout>
 
         <TextView
