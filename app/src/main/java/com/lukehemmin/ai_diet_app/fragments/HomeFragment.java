@@ -198,9 +198,16 @@ public class HomeFragment extends Fragment {
 
     private void updateDateDisplay(Calendar date) {
         currentSelectedDate = (Calendar) date.clone();
-        if (isSameDay(date, Calendar.getInstance())) {
+        Calendar today = Calendar.getInstance();
+        Calendar yesterday = (Calendar) today.clone();
+        yesterday.add(Calendar.DAY_OF_MONTH, -1);
+
+        if (isSameDay(date, today)) {
             txtCurrentDate.setText("오늘");
             btnNextDate.setVisibility(View.INVISIBLE);
+        } else if (isSameDay(date, yesterday)) {
+            txtCurrentDate.setText("어제");
+            btnNextDate.setVisibility(View.VISIBLE);
         } else {
             txtCurrentDate.setText(new SimpleDateFormat("M월 d일", Locale.KOREA).format(date.getTime()));
             btnNextDate.setVisibility(View.VISIBLE);
