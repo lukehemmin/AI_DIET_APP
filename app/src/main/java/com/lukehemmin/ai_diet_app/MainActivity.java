@@ -28,6 +28,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // --- 로그인 상태 체크 (임시 로직) ---
+        // SharedPreferences를 사용하여 로그인 여부 확인
+        android.content.SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        boolean isLoggedIn = prefs.getBoolean("is_logged_in", false); // 기본값 false (로그인 안됨)
+
+        if (!isLoggedIn) {
+            // 로그인이 안 되어 있다면 로그인 화면으로 이동
+            android.content.Intent intent = new android.content.Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish(); // MainActivity 종료
+            return;
+        }
+        // ----------------------------------
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         
