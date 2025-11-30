@@ -13,3 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+.env
+DoDiet-API/.env
+ai-식단-관리-healthmate (1)/.env
+DoDiet-API/console.log

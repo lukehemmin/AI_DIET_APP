@@ -15,6 +15,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.lukehemmin.dodietapi.entity.VerificationCode;
+import com.lukehemmin.dodietapi.repository.VerificationCodeRepository;
+import java.time.LocalDateTime;
+import java.util.Random;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -23,9 +28,60 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
+    private final EmailService emailService;
+    private final VerificationCodeRepository verificationCodeRepository;
+
+    @Transactional
+    public void sendVerificationCode(String email) {
+        if (userRepository.existsByEmail(email)) {
+            throw new RuntimeException("이미 가입된 이메일입니다.");
+        }
+
+        String code = String.format("%06d", new Random().nextInt(1000000));
+        
+        VerificationCode verificationCode = VerificationCode.builder()
+                .email(email)
+                .code(code)
+                .expiresAt(LocalDateTime.now().plusMinutes(5))
+                .verified(false)
+                .build();
+        
+        verificationCodeRepository.save(verificationCode);
+        emailService.sendVerificationCode(email, code);
+    }
+
+    @Transactional
+    public boolean verifyCode(String email, String code) {
+        VerificationCode verificationCode = verificationCodeRepository.findTopByEmailOrderByCreatedAtDesc(email)
+                .orElseThrow(() -> new RuntimeException("인증 코드를 찾을 수 없습니다."));
+
+        if (verificationCode.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("인증 코드가 만료되었습니다.");
+        }
+
+        if (verificationCode.getVerified()) {
+            return true; // Already verified
+        }
+
+        if (!verificationCode.getCode().equals(code)) {
+            throw new RuntimeException("인증 코드가 일치하지 않습니다.");
+        }
+
+        verificationCode.setVerified(true);
+        verificationCodeRepository.save(verificationCode);
+        return true;
+    }
 
     @Transactional
     public AuthResponse signup(SignupRequest request) {
+        // Check if email was verified
+        VerificationCode verificationCode = verificationCodeRepository.findTopByEmailOrderByCreatedAtDesc(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("이메일 인증이 필요합니다."));
+        
+        if (!verificationCode.getVerified()) {
+            throw new RuntimeException("이메일 인증이 완료되지 않았습니다.");
+        }
+
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already in use");
         }

@@ -1,5 +1,6 @@
 package com.lukehemmin.dodietapi.controller;
 
+import com.lukehemmin.dodietapi.dto.request.EmailVerificationRequest;
 import com.lukehemmin.dodietapi.dto.request.LoginRequest;
 import com.lukehemmin.dodietapi.dto.request.SignupRequest;
 import com.lukehemmin.dodietapi.dto.response.ApiResponse;
@@ -19,6 +20,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+
+    @PostMapping("/send-code")
+    public ResponseEntity<ApiResponse<Void>> sendVerificationCode(@Valid @RequestBody EmailVerificationRequest request) {
+        authService.sendVerificationCode(request.getEmail());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PostMapping("/verify-code")
+    public ResponseEntity<ApiResponse<Boolean>> verifyCode(@Valid @RequestBody EmailVerificationRequest request) {
+        boolean verified = authService.verifyCode(request.getEmail(), request.getCode());
+        return ResponseEntity.ok(ApiResponse.success(verified));
+    }
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<AuthResponse>> signup(@Valid @RequestBody SignupRequest request) {
