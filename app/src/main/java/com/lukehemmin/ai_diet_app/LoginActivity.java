@@ -62,7 +62,8 @@ public class LoginActivity extends AppCompatActivity {
 
         // Sign Up
         tvSignUp.setOnClickListener(v -> {
-            Toast.makeText(this, "회원가입 기능은 준비 중입니다.", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
+            startActivity(intent);
         });
     }
 
