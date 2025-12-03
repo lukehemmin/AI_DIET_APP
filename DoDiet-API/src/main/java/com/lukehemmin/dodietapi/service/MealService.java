@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 public class MealService {
 
     private final MealRepository mealRepository;
+    private final BadgeService badgeService;
 
     @Transactional
     public List<MealResponse> createMeals(User user, MealCreateRequest request) {
@@ -40,6 +41,9 @@ public class MealService {
                 .collect(Collectors.toList());
 
         List<Meal> savedMeals = mealRepository.saveAll(meals);
+        
+        // Check badges
+        badgeService.checkMealBadges(user);
         
         return savedMeals.stream()
                 .map(MealResponse::from)

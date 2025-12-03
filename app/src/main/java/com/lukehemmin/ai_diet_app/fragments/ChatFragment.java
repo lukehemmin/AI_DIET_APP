@@ -6,7 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,12 +15,25 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.lukehemmin.ai_diet_app.R;
+import com.lukehemmin.ai_diet_app.adapters.ChatAdapter;
+import com.lukehemmin.ai_diet_app.data.model.ApiResponse;
+import com.lukehemmin.ai_diet_app.data.model.ChatMessage;
+import com.lukehemmin.ai_diet_app.data.model.ChatRequest;
+import com.lukehemmin.ai_diet_app.data.model.ChatResponse;
+import com.lukehemmin.ai_diet_app.network.ApiService;
+import com.lukehemmin.ai_diet_app.network.RetrofitClient;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ChatFragment extends Fragment {
 
     private RecyclerView rvChatMessages;
     private EditText etChatInput;
     private ImageView btnSendMessage;
+    private ChatAdapter chatAdapter;
+    private ApiService apiService;
 
     @Nullable
     @Override
@@ -40,6 +53,10 @@ public class ChatFragment extends Fragment {
         btnSendMessage = view.findViewById(R.id.btn_send_message);
 
         rvChatMessages.setLayoutManager(new LinearLayoutManager(getContext()));
+        chatAdapter = new ChatAdapter();
+        rvChatMessages.setAdapter(chatAdapter);
+
+        apiService = RetrofitClient.getClient(getContext()).create(ApiService.class);
     }
 
     private void setupListeners() {
@@ -47,14 +64,35 @@ public class ChatFragment extends Fragment {
     }
 
     private void loadInitialMessages() {
-        // TODO: Load initial greeting message
+        chatAdapter.addMessage(new ChatMessage("안녕하세요! 저는 당신의 AI 영양사입니다. 식단이나 건강에 대해 궁금한 점이 있으신가요?", false));
     }
 
     private void sendMessage() {
         String message = etChatInput.getText().toString().trim();
         if (!message.isEmpty()) {
-            // TODO: Send message and get AI response
+            chatAdapter.addMessage(new ChatMessage(message, true));
+            rvChatMessages.scrollToPosition(chatAdapter.getItemCount() - 1);
             etChatInput.setText("");
+
+            apiService.chat(new ChatRequest(message)).enqueue(new Callback<ApiResponse<ChatResponse>>() {
+                @Override
+                public void onResponse(Call<ApiResponse<ChatResponse>> call, Response<ApiResponse<ChatResponse>> response) {
+                    if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                        String reply = response.body().getData().getReply();
+                        chatAdapter.addMessage(new ChatMessage(reply, false));
+                        rvChatMessages.scrollToPosition(chatAdapter.getItemCount() - 1);
+                    } else {
+                        chatAdapter.addMessage(new ChatMessage("죄송합니다. 오류가 발생했습니다.", false));
+                        rvChatMessages.scrollToPosition(chatAdapter.getItemCount() - 1);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ApiResponse<ChatResponse>> call, Throwable t) {
+                    chatAdapter.addMessage(new ChatMessage("네트워크 오류가 발생했습니다: " + t.getMessage(), false));
+                    rvChatMessages.scrollToPosition(chatAdapter.getItemCount() - 1);
+                }
+            });
         }
     }
 }

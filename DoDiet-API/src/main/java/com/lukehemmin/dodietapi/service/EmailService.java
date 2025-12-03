@@ -19,6 +19,11 @@ public class EmailService {
 
     public void sendVerificationCode(String to, String code) {
         try {
+            log.info("==========================================");
+            log.info("SENDING EMAIL to: {}", to);
+            log.info("Verification Code: {}", code);
+            log.info("==========================================");
+
             if (emailSender == null || fromEmail == null || fromEmail.isEmpty()) {
                 log.info("==========================================");
                 log.info("MOCK EMAIL SEND to: {}", to);

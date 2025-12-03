@@ -56,6 +56,9 @@ public class User {
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<WaterIntake> waterIntakes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GroupMember> groupMemberships = new ArrayList<>();
     
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

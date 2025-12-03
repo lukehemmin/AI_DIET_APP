@@ -48,7 +48,38 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="@dimen/spacing_lg">
+
+            <!-- Friend Requests Section -->
+            <TextView
+                android:id="@+id/tv_requests_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="받은 요청"
+                android:textSize="@dimen/text_lg"
+                android:textStyle="bold"
+                android:textColor="@color/gray_text"
+                android:layout_marginBottom="@dimen/spacing_sm"
+                android:visibility="gone"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_friend_requests"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:layout_marginBottom="@dimen/spacing_lg"
+                android:visibility="gone"/>
             
+            <!-- Friends Section -->
+            <TextView
+                android:id="@+id/tv_friends_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="친구 목록"
+                android:textSize="@dimen/text_lg"
+                android:textStyle="bold"
+                android:textColor="@color/gray_text"
+                android:layout_marginBottom="@dimen/spacing_sm"/>
+
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_friends"
                 android:layout_width="match_parent"

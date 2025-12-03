@@ -1,5 +1,6 @@
 package com.lukehemmin.dodietapi.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class GeminiService {
     private final StorageService storageService;
     private final ObjectMapper objectMapper;
 
-    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
     public Map<String, Object> analyzeFoodImage(String imagePath) {
         log.info("Analyzing image at: {}", imagePath);
@@ -55,7 +56,7 @@ public class GeminiService {
             imagePart.put("inline_data", inlineData);
 
             Map<String, Object> textPart = new HashMap<>();
-            textPart.put("text", "Analyze this food image. Identify the main food item, estimate the serving size (in grams), calories (kcal), and macronutrients (carbs, protein, fat in grams). Return ONLY a JSON object with the following structure: {\"foodItem\": \"string\", \"servingSize\": number, \"kcal\": number, \"macro\": {\"carbs\": number, \"protein\": number, \"fat\": number}}. Do not include markdown formatting.");
+            textPart.put("text", "Analyze this food image. Identify the main food item, estimate the serving size (in grams), calories (kcal), and macronutrients (carbs, protein, fat in grams). Return ONLY a JSON object with the following structure: {\"foodItem\": \"string\", \"servingSize\": number, \"kcal\": number, \"carbs\": number, \"protein\": number, \"fat\": number}. Do not include markdown formatting.");
 
             Map<String, Object> content = new HashMap<>();
             content.put("parts", List.of(textPart, imagePart));
@@ -84,6 +85,58 @@ public class GeminiService {
         }
     }
 
+    public String chat(String message) {
+        log.info("Chatting with Gemini: {}", message);
+
+        try {
+            Map<String, Object> requestBody = new HashMap<>();
+            
+            Map<String, Object> textPart = new HashMap<>();
+            textPart.put("text", "You are a helpful diet assistant. Answer the user's question about diet, nutrition, or health. User message: " + message);
+
+            Map<String, Object> content = new HashMap<>();
+            content.put("parts", List.of(textPart));
+
+            requestBody.put("contents", List.of(content));
+
+            String response = webClientBuilder.build()
+                    .post()
+                    .uri(GEMINI_API_URL + "?key=" + apiKey)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromValue(requestBody))
+                    .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                            clientResponse -> clientResponse.bodyToMono(String.class)
+                                    .map(body -> new RuntimeException("Gemini API Error: " + body)))
+                    .bodyToMono(String.class)
+                    .block();
+
+            return parseChatResponse(response);
+
+        } catch (Exception e) {
+            log.error("Error chatting with Gemini", e);
+            throw new RuntimeException("Failed to chat with Gemini: " + e.getMessage(), e);
+        }
+    }
+
+    private String parseChatResponse(String response) {
+        try {
+            JsonNode rootNode = objectMapper.readTree(response);
+            JsonNode candidates = rootNode.path("candidates");
+            if (candidates.isArray() && !candidates.isEmpty()) {
+                JsonNode content = candidates.get(0).path("content");
+                JsonNode parts = content.path("parts");
+                if (parts.isArray() && !parts.isEmpty()) {
+                    return parts.get(0).path("text").asText();
+                }
+            }
+            return "죄송합니다. 답변을 생성할 수 없습니다.";
+        } catch (Exception e) {
+            log.error("Error parsing Gemini chat response: {}", response, e);
+            throw new RuntimeException("Failed to parse chat response", e);
+        }
+    }
+
     private Map<String, Object> parseGeminiResponse(String response) {
         try {
             JsonNode rootNode = objectMapper.readTree(response);
@@ -96,7 +149,7 @@ public class GeminiService {
                     // Clean up markdown if present (e.g. ```json ... ```)
                     text = text.replaceAll("```json", "").replaceAll("```", "").trim();
                     
-                    return objectMapper.readValue(text, Map.class);
+                    return objectMapper.readValue(text, new TypeReference<Map<String, Object>>() {});
                 }
             }
             throw new RuntimeException("Invalid response format from Gemini API");

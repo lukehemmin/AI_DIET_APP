@@ -3,80 +3,74 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="12dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp">
+    android:layout_marginBottom="@dimen/spacing_md"
+    app:cardBackgroundColor="@color/gray_100"
+    app:cardCornerRadius="@dimen/corner_radius_md"
+    app:cardElevation="@dimen/card_elevation">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp">
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_lg">
 
-        <ImageView
-            android:id="@+id/challenge_icon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:src="@android:drawable/ic_menu_info_details" 
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/img_challenge_icon"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_launcher_foreground"
+                app:tint="@color/primary_blue" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="@dimen/spacing_md">
+
+                <TextView
+                    android:id="@+id/tv_challenge_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Challenge Title"
+                    android:textSize="@dimen/text_md"
+                    android:textStyle="bold"
+                    android:textColor="@color/gray_text"/>
+
+                <TextView
+                    android:id="@+id/tv_challenge_goal"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Goal"
+                    android:textSize="@dimen/text_sm"
+                    android:textColor="@color/gray_subtext"/>
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btn_join_challenge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="참여"
+                android:textColor="@color/white"
+                android:backgroundTint="@color/primary_blue"
+                style="@style/Widget.MaterialComponents.Button"/>
+
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/challenge_title"
-            android:layout_width="0dp"
+            android:id="@+id/tv_challenge_description"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:text="단백질 섭취 챌린지"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@+id/challenge_status"
-            app:layout_constraintStart_toEndOf="@+id/challenge_icon"
-            app:layout_constraintTop_toTopOf="@+id/challenge_icon" />
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:text="Description"
+            android:textSize="@dimen/text_sm"
+            android:textColor="@color/gray_subtext"/>
 
-        <TextView
-            android:id="@+id/challenge_description"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="최근 식사 기록 3일간 단백질 목표 달성 (0/3일)"
-            app:layout_constraintEnd_toEndOf="@+id/challenge_title"
-            app:layout_constraintStart_toStartOf="@+id/challenge_title"
-            app:layout_constraintTop_toBottomOf="@+id/challenge_title" />
-
-        <TextView
-            android:id="@+id/challenge_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_challenge_status"
-            android:paddingStart="10dp"
-            android:paddingTop="4dp"
-            android:paddingEnd="10dp"
-            android:paddingBottom="4dp"
-            android:text="진행중"
-            android:textColor="#F57F17"
-            android:textSize="12sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ProgressBar
-            android:id="@+id/challenge_progress"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:progress="0"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/challenge_title"
-            app:layout_constraintTop_toBottomOf="@+id/challenge_description" />
-
-        <TextView
-            android:id="@+id/challenge_progress_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="0% 달성"
-            android:textSize="12sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/challenge_progress" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 </androidx.cardview.widget.CardView>

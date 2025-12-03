@@ -3,23 +3,36 @@ package com.lukehemmin.ai_diet_app.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.lukehemmin.ai_diet_app.R;
-import com.lukehemmin.ai_diet_app.models.Friend;
+import com.lukehemmin.ai_diet_app.data.model.FriendResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.FriendViewHolder> {
 
-    private List<Friend> friendList;
+    private List<FriendResponse> friends = new ArrayList<>();
+    private final OnFriendActionListener listener;
+    private final boolean isRequestList;
 
-    public FriendAdapter(List<Friend> friendList) {
-        this.friendList = friendList;
+    public interface OnFriendActionListener {
+        void onAccept(String friendshipId);
+    }
+
+    public FriendAdapter(boolean isRequestList, OnFriendActionListener listener) {
+        this.isRequestList = isRequestList;
+        this.listener = listener;
+    }
+
+    public void setFriends(List<FriendResponse> friends) {
+        this.friends = friends;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -31,24 +44,38 @@ public class FriendAdapter extends RecyclerView.Adapter<FriendAdapter.FriendView
 
     @Override
     public void onBindViewHolder(@NonNull FriendViewHolder holder, int position) {
-        Friend friend = friendList.get(position);
-        holder.friendName.setText(friend.getName());
-        holder.friendAvatar.setImageResource(friend.getAvatarResId());
+        FriendResponse friend = friends.get(position);
+        holder.bind(friend);
     }
 
     @Override
     public int getItemCount() {
-        return friendList.size();
+        return friends.size();
     }
 
-    static class FriendViewHolder extends RecyclerView.ViewHolder {
-        ImageView friendAvatar;
-        TextView friendName;
+    class FriendViewHolder extends RecyclerView.ViewHolder {
+        TextView tvName, tvEmail;
+        Button btnAccept;
 
         public FriendViewHolder(@NonNull View itemView) {
             super(itemView);
-            friendAvatar = itemView.findViewById(R.id.img_friend_avatar);
-            friendName = itemView.findViewById(R.id.txt_friend_name);
+            tvName = itemView.findViewById(R.id.tv_friend_name);
+            tvEmail = itemView.findViewById(R.id.tv_friend_email);
+            btnAccept = itemView.findViewById(R.id.btn_accept_friend); // Ensure this ID exists in item_friend.xml
+        }
+
+        void bind(FriendResponse friend) {
+            tvName.setText(friend.getName());
+            tvEmail.setText(friend.getEmail());
+
+            if (isRequestList) {
+                btnAccept.setVisibility(View.VISIBLE);
+                btnAccept.setOnClickListener(v -> {
+                    if (listener != null) listener.onAccept(friend.getId());
+                });
+            } else {
+                btnAccept.setVisibility(View.GONE);
+            }
         }
     }
 }

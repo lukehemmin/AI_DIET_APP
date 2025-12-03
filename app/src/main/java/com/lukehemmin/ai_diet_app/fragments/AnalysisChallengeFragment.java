@@ -4,52 +4,108 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.lukehemmin.ai_diet_app.R;
+import com.lukehemmin.ai_diet_app.adapters.ChallengeAdapter;
+import com.lukehemmin.ai_diet_app.data.model.ApiResponse;
+import com.lukehemmin.ai_diet_app.data.model.ChallengeResponse;
+import com.lukehemmin.ai_diet_app.data.model.UserChallengeResponse;
+import com.lukehemmin.ai_diet_app.network.ApiService;
+import com.lukehemmin.ai_diet_app.network.RetrofitClient;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AnalysisChallengeFragment extends Fragment {
+
+    private RecyclerView rvChallenges;
+    private ChallengeAdapter adapter;
+    private ApiService apiService;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_analysis_challenge, container, false);
+        View view = inflater.inflate(R.layout.fragment_analysis_challenge, container, false);
+        
+        apiService = RetrofitClient.getClient(getContext()).create(ApiService.class);
+        
+        initializeViews(view);
+        loadChallenges();
+        
+        return view;
     }
 
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+    private void initializeViews(View view) {
+        rvChallenges = view.findViewById(R.id.rv_challenges);
+        rvChallenges.setLayoutManager(new LinearLayoutManager(getContext()));
+        
+        adapter = new ChallengeAdapter();
+        adapter.setOnChallengeActionListener(this::joinChallenge);
+        rvChallenges.setAdapter(adapter);
+    }
 
-        // Challenge 1
-        View challenge1 = view.findViewById(R.id.challenge_item_1);
-        TextView title1 = challenge1.findViewById(R.id.challenge_title);
-        TextView desc1 = challenge1.findViewById(R.id.challenge_description);
-        title1.setText("단백질 섭취 챌린지");
-        desc1.setText("최근 식사 기록 3일간 단백질 목표 달성 (0/3일)");
-        ImageView icon1 = challenge1.findViewById(R.id.challenge_icon);
-        icon1.setImageResource(android.R.drawable.ic_menu_compass);
+    private void loadChallenges() {
+        apiService.getAllChallenges().enqueue(new Callback<ApiResponse<Map<String, List<ChallengeResponse>>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Map<String, List<ChallengeResponse>>>> call, Response<ApiResponse<Map<String, List<ChallengeResponse>>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
+                    Map<String, List<ChallengeResponse>> data = response.body().getData();
+                    List<ChallengeResponse> allChallenges = new ArrayList<>();
+                    
+                    // Flatten the map (e.g., "daily", "weekly") into a single list for now
+                    // or we could use sections. For simplicity, just add all.
+                    if (data.containsKey("daily")) {
+                        allChallenges.addAll(data.get("daily"));
+                    }
+                    if (data.containsKey("weekly")) {
+                        allChallenges.addAll(data.get("weekly"));
+                    }
+                    // Add other keys if exists
+                    for (String key : data.keySet()) {
+                        if (!key.equals("daily") && !key.equals("weekly")) {
+                            allChallenges.addAll(data.get(key));
+                        }
+                    }
 
-        // Challenge 2
-        View challenge2 = view.findViewById(R.id.challenge_item_2);
-        TextView title2 = challenge2.findViewById(R.id.challenge_title);
-        TextView desc2 = challenge2.findViewById(R.id.challenge_description);
-        title2.setText("아침 식사 챙기기");
-        desc2.setText("최근 7일간 아침 식사 기록 (0/7일)");
-        ImageView icon2 = challenge2.findViewById(R.id.challenge_icon);
-        icon2.setImageResource(android.R.drawable.ic_menu_agenda);
+                    adapter.setChallenges(allChallenges);
+                }
+            }
 
-        // Challenge 3
-        View challenge3 = view.findViewById(R.id.challenge_item_3);
-        TextView title3 = challenge3.findViewById(R.id.challenge_title);
-        TextView desc3 = challenge3.findViewById(R.id.challenge_description);
-        title3.setText("주간 칼로리 목표");
-        desc3.setText("최근 7일간 목표 칼로리 범위 유지 (0/7일)");
-        ImageView icon3 = challenge3.findViewById(R.id.challenge_icon);
-        icon3.setImageResource(android.R.drawable.ic_menu_myplaces);
+            @Override
+            public void onFailure(Call<ApiResponse<Map<String, List<ChallengeResponse>>>> call, Throwable t) {
+                Toast.makeText(getContext(), "챌린지 목록을 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void joinChallenge(String challengeId) {
+        apiService.joinChallenge(challengeId).enqueue(new Callback<ApiResponse<Map<String, UserChallengeResponse>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Map<String, UserChallengeResponse>>> call, Response<ApiResponse<Map<String, UserChallengeResponse>>> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(getContext(), "챌린지에 참여했습니다!", Toast.LENGTH_SHORT).show();
+                    // Optionally refresh list or update UI
+                } else {
+                    Toast.makeText(getContext(), "참여 실패: " + response.message(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Map<String, UserChallengeResponse>>> call, Throwable t) {
+                Toast.makeText(getContext(), "네트워크 오류", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

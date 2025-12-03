@@ -105,10 +105,14 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
-        <!-- Challenge Items -->
-        <include android:id="@+id/challenge_item_1" layout="@layout/item_challenge" />
-        <include android:id="@+id/challenge_item_2" layout="@layout/item_challenge" />
-        <include android:id="@+id/challenge_item_3" layout="@layout/item_challenge" />
+        <!-- Challenge List -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_challenges"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:nestedScrollingEnabled="false"
+            tools:listitem="@layout/item_challenge"/>
 
     </LinearLayout>
 </ScrollView>

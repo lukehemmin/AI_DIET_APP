@@ -7,14 +7,14 @@
     app:cardBackgroundColor="@color/gray_100"
     app:cardCornerRadius="@dimen/corner_radius_md"
     app:cardElevation="@dimen/card_elevation">
-    
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:padding="@dimen/spacing_lg">
-        
+
         <!-- Friend Avatar -->
         <ImageView
             android:id="@+id/img_friend_avatar"
@@ -24,17 +24,46 @@
             android:background="@drawable/bg_profile_image"
             android:src="@drawable/ic_launcher_foreground"
             android:contentDescription="친구 프로필 사진"/>
-        
-        <!-- Friend Name -->
-        <TextView
-            android:id="@+id/txt_friend_name"
+
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="안병은"
-            android:textSize="@dimen/text_md"
-            android:textStyle="bold"
-            android:textColor="@color/gray_text"
-            android:layout_marginStart="@dimen/spacing_lg"/>
+            android:orientation="vertical"
+            android:layout_marginStart="@dimen/spacing_lg">
+
+            <!-- Friend Name -->
+            <TextView
+                android:id="@+id/tv_friend_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Name"
+                android:textSize="@dimen/text_md"
+                android:textStyle="bold"
+                android:textColor="@color/gray_text"/>
+
+            <!-- Friend Email -->
+            <TextView
+                android:id="@+id/tv_friend_email"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="email@example.com"
+                android:textSize="@dimen/text_sm"
+                android:textColor="@color/gray_subtext"/>
+        </LinearLayout>
+
+        <!-- Accept Button -->
+        <Button
+            android:id="@+id/btn_accept_friend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="수락"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/primary_blue"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:minWidth="0dp"
+            android:paddingHorizontal="12dp"
+            android:visibility="gone"/>
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>

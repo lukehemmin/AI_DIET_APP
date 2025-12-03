@@ -5,6 +5,9 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import androidx.appcompat.app.AlertDialog;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;
@@ -40,13 +43,32 @@ import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
 import com.lukehemmin.ai_diet_app.R;
+import com.lukehemmin.ai_diet_app.data.model.ApiResponse;
+import com.lukehemmin.ai_diet_app.data.model.MealAnalysisResponse;
+import com.lukehemmin.ai_diet_app.data.model.MealAnalysisResult;
+import com.lukehemmin.ai_diet_app.data.model.MealCreateRequest;
+import com.lukehemmin.ai_diet_app.data.model.MealResponse;
+import com.lukehemmin.ai_diet_app.network.ApiService;
+import com.lukehemmin.ai_diet_app.network.RetrofitClient;
+import com.lukehemmin.ai_diet_app.utils.FileUtils;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HomeFragment extends Fragment {
 
@@ -54,6 +76,7 @@ public class HomeFragment extends Fragment {
         void onDateSelected(Calendar date);
     }
 
+    private ApiService apiService;
     private TextView txtCurrentKcal, txtGoalKcal, txtCurrentDate;
     private TextView txtCarbsLegend, txtProteinLegend, txtFatLegend;
 
@@ -95,9 +118,16 @@ public class HomeFragment extends Fragment {
     private final ActivityResultLauncher<Intent> cameraLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == Activity.RESULT_OK) {
-                    Toast.makeText(getContext(), "사진이 촬영되었습니다.", Toast.LENGTH_SHORT).show();
-                    // TODO: 촬영된 이미지 처리 (result.getData())
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    try {
+                        Bitmap bitmap = (Bitmap) result.getData().getExtras().get("data");
+                        if (bitmap != null) {
+                            File file = FileUtils.getFileFromBitmap(requireContext(), bitmap);
+                            analyzeImage(file);
+                        }
+                    } catch (Exception e) {
+                        Toast.makeText(getContext(), "이미지 처리 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
     );
@@ -107,8 +137,12 @@ public class HomeFragment extends Fragment {
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
                     Uri selectedImage = result.getData().getData();
-                    Toast.makeText(getContext(), "사진이 선택되었습니다.", Toast.LENGTH_SHORT).show();
-                    // TODO: 선택된 이미지 처리 (selectedImage)
+                    try {
+                        File file = FileUtils.getFileFromUri(requireContext(), selectedImage);
+                        analyzeImage(file);
+                    } catch (Exception e) {
+                        Toast.makeText(getContext(), "이미지 처리 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
     );
@@ -118,6 +152,8 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
         
+        apiService = RetrofitClient.getClient(requireContext()).create(ApiService.class);
+
         initializeViews(view);
         setupListeners(view);
         loadInitialData();
@@ -304,6 +340,134 @@ public class HomeFragment extends Fragment {
         btnClose.setOnClickListener(v -> dialog.dismiss());
 
         dialog.show();
+    }
+
+    private AlertDialog loadingDialog;
+
+    private void showLoadingDialog() {
+        if (loadingDialog == null) {
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+            builder.setCancelable(false);
+            builder.setView(LayoutInflater.from(requireContext()).inflate(R.layout.dialog_loading, null));
+            loadingDialog = builder.create();
+        }
+        loadingDialog.show();
+    }
+
+    private void dismissLoadingDialog() {
+        if (loadingDialog != null && loadingDialog.isShowing()) {
+            loadingDialog.dismiss();
+        }
+    }
+
+    private void analyzeImage(File file) {
+        showLoadingDialog();
+
+        RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), file);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("image", file.getName(), requestFile);
+
+        apiService.analyzeMeal(body).enqueue(new Callback<ApiResponse<MealAnalysisResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<MealAnalysisResponse>> call, Response<ApiResponse<MealAnalysisResponse>> response) {
+                dismissLoadingDialog();
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    MealAnalysisResponse data = response.body().getData();
+                    showAnalysisResultDialog(file, data);
+                } else {
+                    Toast.makeText(getContext(), "분석 실패: " + (response.body() != null ? response.body().getMessage() : "오류"), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<MealAnalysisResponse>> call, Throwable t) {
+                dismissLoadingDialog();
+                Toast.makeText(getContext(), "네트워크 오류: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void showAnalysisResultDialog(File imageFile, MealAnalysisResponse data) {
+        final Dialog dialog = new Dialog(getContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_meal_analysis);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        ImageView ivAnalyzed = dialog.findViewById(R.id.iv_analyzed_image);
+        ivAnalyzed.setImageURI(Uri.fromFile(imageFile));
+
+        TextInputEditText etFoodName = dialog.findViewById(R.id.et_food_name);
+        TextInputEditText etCalories = dialog.findViewById(R.id.et_calories);
+        TextInputEditText etServingSize = dialog.findViewById(R.id.et_serving_size);
+        TextInputEditText etCarbs = dialog.findViewById(R.id.et_carbs);
+        TextInputEditText etProtein = dialog.findViewById(R.id.et_protein);
+        TextInputEditText etFat = dialog.findViewById(R.id.et_fat);
+
+        List<MealAnalysisResult> results = data.getAnalysisResults();
+        String serverImagePath = data.getImageUrl();
+
+        if (results != null && !results.isEmpty()) {
+            MealAnalysisResult firstResult = results.get(0);
+            etFoodName.setText(firstResult.getFoodItem());
+            etCalories.setText(String.valueOf(firstResult.getKcal()));
+            etCarbs.setText(String.valueOf(firstResult.getCarbs()));
+            etProtein.setText(String.valueOf(firstResult.getProtein()));
+            etFat.setText(String.valueOf(firstResult.getFat()));
+        }
+
+        dialog.findViewById(R.id.btn_cancel).setOnClickListener(v -> dialog.dismiss());
+
+        dialog.findViewById(R.id.btn_save_meal).setOnClickListener(v -> {
+            try {
+                String foodName = etFoodName.getText().toString();
+                Double serving = Double.parseDouble(etServingSize.getText().toString());
+                Double kcal = Double.parseDouble(etCalories.getText().toString());
+                Double carbs = Double.parseDouble(etCarbs.getText().toString());
+                Double protein = Double.parseDouble(etProtein.getText().toString());
+                Double fat = Double.parseDouble(etFat.getText().toString());
+
+                // Determine meal time based on current time
+                Calendar now = Calendar.getInstance();
+                int hour = now.get(Calendar.HOUR_OF_DAY);
+                String mealTime = "SNACK";
+                if (hour >= 6 && hour < 11) mealTime = "BREAKFAST";
+                else if (hour >= 11 && hour < 17) mealTime = "LUNCH";
+                else if (hour >= 17 && hour < 22) mealTime = "DINNER";
+
+                String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(now.getTime());
+
+                MealCreateRequest.MealItemRequest item = new MealCreateRequest.MealItemRequest(
+                        foodName, serving, kcal, carbs, protein, fat, mealTime, date, serverImagePath
+                );
+
+                saveMeal(Collections.singletonList(item), dialog);
+
+            } catch (NumberFormatException e) {
+                Toast.makeText(getContext(), "올바른 숫자를 입력해주세요.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        dialog.show();
+    }
+
+    private void saveMeal(List<MealCreateRequest.MealItemRequest> meals, Dialog dialog) {
+        apiService.createMeals(new MealCreateRequest(meals)).enqueue(new Callback<ApiResponse<Map<String, List<MealResponse>>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Map<String, List<MealResponse>>>> call, Response<ApiResponse<Map<String, List<MealResponse>>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Toast.makeText(getContext(), "식단이 저장되었습니다.", Toast.LENGTH_SHORT).show();
+                    dialog.dismiss();
+                    // TODO: Refresh meal list
+                } else {
+                    Toast.makeText(getContext(), "저장 실패: " + (response.body() != null ? response.body().getMessage() : "오류"), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Map<String, List<MealResponse>>>> call, Throwable t) {
+                Toast.makeText(getContext(), "네트워크 오류: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder> {
