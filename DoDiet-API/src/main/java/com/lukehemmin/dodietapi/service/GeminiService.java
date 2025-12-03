@@ -66,10 +66,7 @@ public class GeminiService {
             // 3. Call Gemini API
             String response = webClientBuilder.build()
                     .post()
-                    .uri(uriBuilder -> uriBuilder
-                            .path(GEMINI_API_URL)
-                            .queryParam("key", apiKey)
-                            .build())
+                    .uri(GEMINI_API_URL + "?key=" + apiKey)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(BodyInserters.fromValue(requestBody))
                     .retrieve()
