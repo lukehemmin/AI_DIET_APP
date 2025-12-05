@@ -298,11 +298,13 @@
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
                         <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etAge"
+                            android:id="@+id/etBirthDate"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="나이"
-                            android:inputType="number" />
+                            android:hint="생년월일"
+                            android:inputType="none"
+                            android:focusable="false"
+                            android:clickable="true" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <com.google.android.material.textfield.TextInputLayout

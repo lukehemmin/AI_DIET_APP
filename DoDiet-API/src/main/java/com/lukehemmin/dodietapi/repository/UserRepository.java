@@ -4,6 +4,7 @@ import com.lukehemmin.dodietapi.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,4 +12,6 @@ import java.util.UUID;
 public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
+    java.util.List<User> findByName(String name);
+    java.util.List<User> findByNameAndBirthDate(String name, java.time.LocalDate birthDate);
 }

@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -33,8 +34,11 @@ public class User {
     @Column(nullable = false)
     private Gender gender; // MALE, FEMALE
     
+    @Column(nullable = true)
+    private LocalDate birthDate; // Changed from Age to BirthDate for more precise identification
+
     @Column(nullable = false)
-    private Integer age;
+    private Integer age; // Can be derived or kept for simplicity
     
     @Column(nullable = false)
     private Double height;

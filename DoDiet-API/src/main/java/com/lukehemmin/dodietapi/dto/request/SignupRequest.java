@@ -6,6 +6,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import java.time.LocalDate;
+
+import java.time.LocalDate;
 
 @Data
 public class SignupRequest {
@@ -29,7 +32,7 @@ public class SignupRequest {
         private Gender gender;
 
         @NotNull
-        private Integer age;
+        private LocalDate birthDate;
 
         @NotNull
         private Double height;

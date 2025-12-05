@@ -44,4 +44,22 @@ public class AuthController {
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @PostMapping("/find-id")
+    public ResponseEntity<ApiResponse<java.util.List<String>>> findId(@Valid @RequestBody com.lukehemmin.dodietapi.dto.request.FindIdRequest request) {
+        java.util.List<String> emails = authService.findId(request.getName(), request.getBirthDate());
+        return ResponseEntity.ok(ApiResponse.success(emails));
+    }
+
+    @PostMapping("/password-reset/request")
+    public ResponseEntity<ApiResponse<Void>> requestPasswordReset(@Valid @RequestBody EmailVerificationRequest request) {
+        authService.sendPasswordResetCode(request.getEmail());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
+    @PostMapping("/password-reset/confirm")
+    public ResponseEntity<ApiResponse<Void>> confirmPasswordReset(@Valid @RequestBody com.lukehemmin.dodietapi.dto.request.PasswordResetConfirmRequest request) {
+        authService.resetPassword(request.getEmail(), request.getCode(), request.getNewPassword());
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 }

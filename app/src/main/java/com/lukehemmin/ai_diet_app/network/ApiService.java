@@ -7,6 +7,8 @@ import com.lukehemmin.ai_diet_app.data.model.ChatResponse;
 import com.lukehemmin.ai_diet_app.data.model.LoginRequest;
 
 import com.lukehemmin.ai_diet_app.data.model.EmailVerificationRequest;
+import com.lukehemmin.ai_diet_app.data.model.FindIdRequest;
+import com.lukehemmin.ai_diet_app.data.model.PasswordResetConfirmRequest;
 import com.lukehemmin.ai_diet_app.data.model.SignupRequest;
 
 import com.lukehemmin.ai_diet_app.data.model.ChallengeResponse;
@@ -37,11 +39,21 @@ public interface ApiService {
     @POST("api/auth/login")
     Call<ApiResponse<AuthResponse>> login(@Body LoginRequest request);
 
+    @POST("api/auth/find-id")
+    Call<ApiResponse<java.util.List<String>>> findId(@Body com.lukehemmin.ai_diet_app.data.model.FindIdRequest request);
+
+    @POST("api/auth/password-reset/request")
+    Call<ApiResponse<Void>> requestPasswordReset(@Body EmailVerificationRequest request);
+
+    @POST("api/auth/password-reset/confirm")
+    Call<ApiResponse<Void>> confirmPasswordReset(@Body com.lukehemmin.ai_diet_app.data.model.PasswordResetConfirmRequest request);
+
     @POST("api/auth/send-code")
     Call<ApiResponse<Void>> sendVerificationCode(@Body EmailVerificationRequest request);
 
     @POST("api/auth/verify-code")
     Call<ApiResponse<Boolean>> verifyCode(@Body EmailVerificationRequest request);
+
 
     @POST("api/auth/signup")
     Call<ApiResponse<AuthResponse>> signup(@Body SignupRequest request);

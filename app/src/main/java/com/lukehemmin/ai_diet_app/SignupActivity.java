@@ -1,5 +1,6 @@
 package com.lukehemmin.ai_diet_app;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.CountDownTimer;
 import android.os.Bundle;
@@ -24,6 +25,9 @@ import com.lukehemmin.ai_diet_app.data.model.SignupRequest;
 import com.lukehemmin.ai_diet_app.network.ApiService;
 import com.lukehemmin.ai_diet_app.network.RetrofitClient;
 
+import java.util.Calendar;
+import java.util.Locale;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -31,7 +35,7 @@ import retrofit2.Response;
 public class SignupActivity extends AppCompatActivity {
 
     private View layoutStep1, layoutCodeVerification, layoutStep2, layoutStep3;
-    private EditText etEmail, etCode, etName, etVerifiedEmail, etPassword, etConfirmPassword, etAge, etHeight, etWeight;
+    private EditText etEmail, etCode, etName, etVerifiedEmail, etPassword, etConfirmPassword, etBirthDate, etHeight, etWeight;
     private Button btnSendCode, btnVerifyCode, btnNextToStep3, btnSignup;
     private RadioGroup rgGender;
     private Spinner spinnerActivityLevel;
@@ -39,6 +43,7 @@ public class SignupActivity extends AppCompatActivity {
 
     private String verifiedEmail;
     private CountDownTimer verificationTimer;
+    private String selectedBirthDate = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +75,7 @@ public class SignupActivity extends AppCompatActivity {
         etVerifiedEmail = findViewById(R.id.etVerifiedEmail);
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
-        etAge = findViewById(R.id.etAge);
+        etBirthDate = findViewById(R.id.etBirthDate);
         etHeight = findViewById(R.id.etHeight);
         etWeight = findViewById(R.id.etWeight);
 
@@ -96,6 +101,22 @@ public class SignupActivity extends AppCompatActivity {
         btnVerifyCode.setOnClickListener(v -> verifyCode());
         btnNextToStep3.setOnClickListener(v -> validateAndMoveToStep3());
         btnSignup.setOnClickListener(v -> performSignup());
+        etBirthDate.setOnClickListener(v -> showDatePicker());
+    }
+
+    private void showDatePicker() {
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(this,
+                (view, year1, month1, dayOfMonth) -> {
+                    // Format: yyyy-MM-dd
+                    selectedBirthDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year1, month1 + 1, dayOfMonth);
+                    etBirthDate.setText(selectedBirthDate);
+                }, year, month, day);
+        datePickerDialog.show();
     }
 
     private void sendVerificationCode() {
@@ -122,7 +143,21 @@ public class SignupActivity extends AppCompatActivity {
                     // 30초 쿨다운 시작
                     startVerificationCooldown();
                 } else {
-                    Toast.makeText(SignupActivity.this, "전송 실패: " + (response.body() != null ? response.body().getMessage() : "오류"), Toast.LENGTH_SHORT).show();
+                    String errorMessage = "오류";
+                    try {
+                        if (response.body() != null) {
+                            errorMessage = response.body().getMessage();
+                        } else if (response.errorBody() != null) {
+                            String errorStr = response.errorBody().string();
+                            org.json.JSONObject jsonObject = new org.json.JSONObject(errorStr);
+                            if (jsonObject.has("message")) {
+                                errorMessage = jsonObject.getString("message");
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    Toast.makeText(SignupActivity.this, "전송 실패: " + errorMessage, Toast.LENGTH_SHORT).show();
                     resetSendButton();
                 }
             }
@@ -225,12 +260,26 @@ public class SignupActivity extends AppCompatActivity {
         String password = etPassword.getText().toString().trim();
         
         String gender = ((RadioButton) findViewById(rgGender.getCheckedRadioButtonId())).getText().equals("남성") ? "MALE" : "FEMALE";
-        Integer age = Integer.parseInt(etAge.getText().toString());
-        Double height = Double.parseDouble(etHeight.getText().toString());
-        Double weight = Double.parseDouble(etWeight.getText().toString());
+        String birthDate = etBirthDate.getText().toString();
+        
+        if (birthDate.isEmpty()) {
+            Toast.makeText(this, "생년월일을 입력해주세요.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Double height;
+        Double weight;
+        try {
+            height = Double.parseDouble(etHeight.getText().toString());
+            weight = Double.parseDouble(etWeight.getText().toString());
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "키와 몸무게를 올바르게 입력해주세요.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String activityLevel = ((ActivityLevel) spinnerActivityLevel.getSelectedItem()).getServerValue();
 
-        SignupRequest.ProfileRequest profile = new SignupRequest.ProfileRequest(gender, age, height, weight, activityLevel);
+        SignupRequest.ProfileRequest profile = new SignupRequest.ProfileRequest(gender, birthDate, height, weight, activityLevel);
         SignupRequest request = new SignupRequest(verifiedEmail, password, name, profile);
 
         ApiService apiService = RetrofitClient.getApiService();
@@ -256,7 +305,21 @@ public class SignupActivity extends AppCompatActivity {
                     startActivity(intent);
                     finish();
                 } else {
-                    Toast.makeText(SignupActivity.this, "회원가입 실패: " + (response.body() != null ? response.body().getMessage() : "오류"), Toast.LENGTH_SHORT).show();
+                    String errorMessage = "오류";
+                    try {
+                        if (response.body() != null) {
+                            errorMessage = response.body().getMessage();
+                        } else if (response.errorBody() != null) {
+                            String errorStr = response.errorBody().string();
+                            org.json.JSONObject jsonObject = new org.json.JSONObject(errorStr);
+                            if (jsonObject.has("message")) {
+                                errorMessage = jsonObject.getString("message");
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    Toast.makeText(SignupActivity.this, "회원가입 실패: " + errorMessage, Toast.LENGTH_SHORT).show();
                 }
             }
 

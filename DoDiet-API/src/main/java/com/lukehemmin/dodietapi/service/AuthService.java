@@ -91,7 +91,9 @@ public class AuthService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setName(request.getName());
         user.setGender(request.getProfile().getGender());
-        user.setAge(request.getProfile().getAge());
+        user.setBirthDate(request.getProfile().getBirthDate());
+        // Calculate age from birthDate
+        user.setAge(java.time.Period.between(request.getProfile().getBirthDate(), java.time.LocalDate.now()).getYears());
         user.setHeight(request.getProfile().getHeight());
         user.setWeight(request.getProfile().getWeight());
         user.setActivityLevel(request.getProfile().getActivityLevel());
@@ -127,5 +129,41 @@ public class AuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
+    }
+
+    public java.util.List<String> findId(String name, java.time.LocalDate birthDate) {
+        return userRepository.findByNameAndBirthDate(name, birthDate).stream()
+                .map(User::getEmail)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Transactional
+    public void sendPasswordResetCode(String email) {
+        if (!userRepository.existsByEmail(email)) {
+            throw new RuntimeException("가입되지 않은 이메일입니다.");
+        }
+
+        String code = String.format("%06d", new Random().nextInt(1000000));
+        
+        VerificationCode verificationCode = VerificationCode.builder()
+                .email(email)
+                .code(code)
+                .expiresAt(LocalDateTime.now().plusMinutes(5))
+                .verified(false)
+                .build();
+        
+        verificationCodeRepository.save(verificationCode);
+        emailService.sendVerificationCode(email, code);
+    }
+
+    @Transactional
+    public void resetPassword(String email, String code, String newPassword) {
+        verifyCode(email, code); // This verifies and marks as verified
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 }

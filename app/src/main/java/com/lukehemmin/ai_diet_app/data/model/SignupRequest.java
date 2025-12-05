@@ -15,14 +15,14 @@ public class SignupRequest {
 
     public static class ProfileRequest {
         private String gender; // MALE, FEMALE
-        private Integer age;
+        private String birthDate; // yyyy-MM-dd
         private Double height;
         private Double weight;
         private String activityLevel; // SEDENTARY, LIGHT, MODERATE, ACTIVE, VERY_ACTIVE
 
-        public ProfileRequest(String gender, Integer age, Double height, Double weight, String activityLevel) {
+        public ProfileRequest(String gender, String birthDate, Double height, Double weight, String activityLevel) {
             this.gender = gender;
-            this.age = age;
+            this.birthDate = birthDate;
             this.height = height;
             this.weight = weight;
             this.activityLevel = activityLevel;
