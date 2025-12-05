@@ -19,7 +19,9 @@ public class RetrofitClient {
     public static ApiService getApiService() {
         if (retrofit == null) {
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+            // BODY level logs binary data for file uploads which causes performance issues/crashes.
+            // Using HEADERS to see status codes, or BASIC for minimal info.
+            logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
 
             OkHttpClient client = new OkHttpClient.Builder()
                     .addInterceptor(logging)
@@ -39,7 +41,8 @@ public class RetrofitClient {
 
     public static Retrofit getClient(Context context) {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+        // BODY level logs binary data for file uploads which causes performance issues/crashes.
+        logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
 
         OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
                 .addInterceptor(logging)

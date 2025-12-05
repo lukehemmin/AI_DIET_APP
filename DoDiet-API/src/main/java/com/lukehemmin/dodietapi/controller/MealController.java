@@ -51,12 +51,12 @@ public class MealController {
                 .path(storedFileName)
                 .toUriString();
 
-        // 3. Analyze (Mock for now)
-        Map<String, Object> analysisResult = geminiService.analyzeFoodImage(storedFileName);
+        // 3. Analyze
+        List<Map<String, Object>> analysisResults = geminiService.analyzeFoodImage(storedFileName);
         
         // 4. Construct response
         Map<String, Object> responseData = new HashMap<>();
-        responseData.put("analysisResults", List.of(analysisResult));
+        responseData.put("analysisResults", analysisResults);
         responseData.put("imageUrl", fileUrl);
         responseData.put("thumbnailUrl", fileUrl); // Use same for now
 

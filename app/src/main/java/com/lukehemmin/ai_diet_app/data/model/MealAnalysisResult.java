@@ -6,6 +6,7 @@ public class MealAnalysisResult {
     private Double carbs;
     private Double protein;
     private Double fat;
+    private Double servingSize;
 
     public String getFoodItem() {
         return foodItem;
@@ -45,5 +46,13 @@ public class MealAnalysisResult {
 
     public void setFat(Double fat) {
         this.fat = fat;
+    }
+
+    public Double getServingSize() {
+        return servingSize;
+    }
+
+    public void setServingSize(Double servingSize) {
+        this.servingSize = servingSize;
     }
 }

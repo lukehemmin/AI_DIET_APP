@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -16,133 +17,91 @@
         android:gravity="center"
         android:layout_marginBottom="16dp"/>
 
-    <ImageView
-        android:id="@+id/iv_analyzed_image"
+    <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        android:scaleType="centerCrop"
         android:layout_marginBottom="16dp"
-        android:background="#EEEEEE"/>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="음식 이름"
-        android:layout_marginBottom="8dp">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/et_food_name"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="0dp">
+        
+        <ImageView
+            android:id="@+id/iv_analyzed_image"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-    </com.google.android.material.textfield.TextInputLayout>
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:background="#EEEEEE"/>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_analysis_results"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:minHeight="100dp"
+        android:layout_marginBottom="16dp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/gray_70"
+        android:layout_marginBottom="16dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="2">
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
 
-        <com.google.android.material.textfield.TextInputLayout
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="칼로리 (kcal)"
-            android:layout_marginEnd="4dp">
+            android:text="총 칼로리"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"/>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_calories"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="0dp"
+        <TextView
+            android:id="@+id/txt_total_calories"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="양 (인분)"
-            android:layout_marginStart="4dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_serving_size"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:text="1.0"/>
-        </com.google.android.material.textfield.TextInputLayout>
+            android:text="0 kcal"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary_blue"/>
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:weightSum="3"
-        android:layout_marginTop="8dp">
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="0dp"
+        android:layout_marginBottom="24dp">
+        
+        <TextView
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="탄수화물 (g)"
-            android:layout_marginEnd="4dp">
+            android:text="식사 시간"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="16dp"
+            android:textColor="@color/gray_text"/>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_carbs"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="0dp"
+        <Spinner
+            android:id="@+id/spinner_meal_time"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="단백질 (g)"
-            android:layout_marginEnd="4dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_protein"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:hint="지방 (g)">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_fat"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"/>
-        </com.google.android.material.textfield.TextInputLayout>
+            android:background="@drawable/bg_spinner_outline"
+            android:padding="8dp"/>
     </LinearLayout>
 
-    <LinearLayout
+    <Button
+        android:id="@+id/btn_add_to_diet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginTop="24dp">
-
-        <Button
-            android:id="@+id/btn_cancel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="취소"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_marginEnd="8dp"/>
-
-        <Button
-            android:id="@+id/btn_save_meal"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="기록하기"
-            android:backgroundTint="@color/primary_orange"/>
-    </LinearLayout>
+        android:text="식단에 추가하기"
+        android:backgroundTint="@color/primary_blue"
+        android:paddingVertical="12dp"
+        android:textSize="16sp"
+        android:textStyle="bold"/>
 
 </LinearLayout>

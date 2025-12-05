@@ -70,6 +70,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import com.lukehemmin.ai_diet_app.adapters.AnalysisResultAdapter;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
+
 public class HomeFragment extends Fragment {
 
     interface OnDateSelectedListener {
@@ -84,7 +88,6 @@ public class HomeFragment extends Fragment {
     private ProgressBar progressCalorie;
     private RecyclerView rvMeals;
     private FloatingActionButton fabAddMeal, fabCamera, fabGallery;
-    private TextView txtCameraLabel, txtGalleryLabel;
     private ImageView btnPrevDate, btnNextDate;
     private LinearLayout waterGlassesContainer;
     private PieChart pieChart;
@@ -123,7 +126,8 @@ public class HomeFragment extends Fragment {
                         Bitmap bitmap = (Bitmap) result.getData().getExtras().get("data");
                         if (bitmap != null) {
                             File file = FileUtils.getFileFromBitmap(requireContext(), bitmap);
-                            analyzeImage(file);
+                            File compressedFile = FileUtils.compressImage(requireContext(), file);
+                            analyzeImage(compressedFile);
                         }
                     } catch (Exception e) {
                         Toast.makeText(getContext(), "이미지 처리 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
@@ -139,7 +143,8 @@ public class HomeFragment extends Fragment {
                     Uri selectedImage = result.getData().getData();
                     try {
                         File file = FileUtils.getFileFromUri(requireContext(), selectedImage);
-                        analyzeImage(file);
+                        File compressedFile = FileUtils.compressImage(requireContext(), file);
+                        analyzeImage(compressedFile);
                     } catch (Exception e) {
                         Toast.makeText(getContext(), "이미지 처리 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
                     }
@@ -189,8 +194,6 @@ public class HomeFragment extends Fragment {
         fabAddMeal = view.findViewById(R.id.fab_main);
         fabCamera = view.findViewById(R.id.fab_camera);
         fabGallery = view.findViewById(R.id.fab_gallery);
-        txtCameraLabel = view.findViewById(R.id.txt_camera_label);
-        txtGalleryLabel = view.findViewById(R.id.txt_gallery_label);
         btnHealthReport = view.findViewById(R.id.suggestion_cta);
 
         // Setup RecyclerView
@@ -348,8 +351,11 @@ public class HomeFragment extends Fragment {
         if (loadingDialog == null) {
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
             builder.setCancelable(false);
-            builder.setView(LayoutInflater.from(requireContext()).inflate(R.layout.dialog_loading, null));
+            builder.setView(LayoutInflater.from(requireContext()).inflate(R.layout.dialog_analyzing, null));
             loadingDialog = builder.create();
+            if (loadingDialog.getWindow() != null) {
+                loadingDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            }
         }
         loadingDialog.show();
     }
@@ -374,7 +380,27 @@ public class HomeFragment extends Fragment {
                     MealAnalysisResponse data = response.body().getData();
                     showAnalysisResultDialog(file, data);
                 } else {
-                    Toast.makeText(getContext(), "분석 실패: " + (response.body() != null ? response.body().getMessage() : "오류"), Toast.LENGTH_SHORT).show();
+                    String errorMessage = "오류";
+                    if (response.body() != null) {
+                        errorMessage = response.body().getMessage();
+                    } else if (response.errorBody() != null) {
+                        try {
+                            String errorJson = response.errorBody().string();
+                            // Extract message manually since we don't have a JSON parser handy for errorBody
+                            int msgStart = errorJson.indexOf("\"message\":\"");
+                            if (msgStart != -1) {
+                                int msgEnd = errorJson.indexOf("\"", msgStart + 11);
+                                if (msgEnd != -1) {
+                                    errorMessage = errorJson.substring(msgStart + 11, msgEnd);
+                                }
+                            } else {
+                                errorMessage = "서버 응답 오류 (" + response.code() + ")";
+                            }
+                        } catch (Exception e) {
+                            errorMessage = "서버 통신 오류 (" + response.code() + ")";
+                        }
+                    }
+                    Toast.makeText(getContext(), "분석 실패: " + errorMessage, Toast.LENGTH_LONG).show();
                 }
             }
 
@@ -396,58 +422,81 @@ public class HomeFragment extends Fragment {
         ImageView ivAnalyzed = dialog.findViewById(R.id.iv_analyzed_image);
         ivAnalyzed.setImageURI(Uri.fromFile(imageFile));
 
-        TextInputEditText etFoodName = dialog.findViewById(R.id.et_food_name);
-        TextInputEditText etCalories = dialog.findViewById(R.id.et_calories);
-        TextInputEditText etServingSize = dialog.findViewById(R.id.et_serving_size);
-        TextInputEditText etCarbs = dialog.findViewById(R.id.et_carbs);
-        TextInputEditText etProtein = dialog.findViewById(R.id.et_protein);
-        TextInputEditText etFat = dialog.findViewById(R.id.et_fat);
+        RecyclerView rvAnalysisResults = dialog.findViewById(R.id.rv_analysis_results);
+        TextView txtTotalCalories = dialog.findViewById(R.id.txt_total_calories);
+        Spinner spinnerMealTime = dialog.findViewById(R.id.spinner_meal_time);
 
         List<MealAnalysisResult> results = data.getAnalysisResults();
-        String serverImagePath = data.getImageUrl();
+        if (results == null) results = new ArrayList<>();
 
-        if (results != null && !results.isEmpty()) {
-            MealAnalysisResult firstResult = results.get(0);
-            etFoodName.setText(firstResult.getFoodItem());
-            etCalories.setText(String.valueOf(firstResult.getKcal()));
-            etCarbs.setText(String.valueOf(firstResult.getCarbs()));
-            etProtein.setText(String.valueOf(firstResult.getProtein()));
-            etFat.setText(String.valueOf(firstResult.getFat()));
-        }
+        final AnalysisResultAdapter[] adapterRef = new AnalysisResultAdapter[1];
+        adapterRef[0] = new AnalysisResultAdapter(results, position -> {
+            adapterRef[0].removeItem(position);
+            updateTotalCalories(adapterRef[0].getItems(), txtTotalCalories);
+        });
 
-        dialog.findViewById(R.id.btn_cancel).setOnClickListener(v -> dialog.dismiss());
+        rvAnalysisResults.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvAnalysisResults.setAdapter(adapterRef[0]);
 
-        dialog.findViewById(R.id.btn_save_meal).setOnClickListener(v -> {
-            try {
-                String foodName = etFoodName.getText().toString();
-                Double serving = Double.parseDouble(etServingSize.getText().toString());
-                Double kcal = Double.parseDouble(etCalories.getText().toString());
-                Double carbs = Double.parseDouble(etCarbs.getText().toString());
-                Double protein = Double.parseDouble(etProtein.getText().toString());
-                Double fat = Double.parseDouble(etFat.getText().toString());
+        updateTotalCalories(results, txtTotalCalories);
 
-                // Determine meal time based on current time
-                Calendar now = Calendar.getInstance();
-                int hour = now.get(Calendar.HOUR_OF_DAY);
-                String mealTime = "SNACK";
-                if (hour >= 6 && hour < 11) mealTime = "BREAKFAST";
-                else if (hour >= 11 && hour < 17) mealTime = "LUNCH";
-                else if (hour >= 17 && hour < 22) mealTime = "DINNER";
+        String[] mealTimeLabels = {"아침", "점심", "저녁", "간식", "야식"};
+        final String[] mealTimeValues = {"BREAKFAST", "LUNCH", "DINNER", "SNACK", "MIDNIGHT_SNACK"};
 
-                String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(now.getTime());
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, mealTimeLabels);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerMealTime.setAdapter(spinnerAdapter);
 
-                MealCreateRequest.MealItemRequest item = new MealCreateRequest.MealItemRequest(
-                        foodName, serving, kcal, carbs, protein, fat, mealTime, date, serverImagePath
-                );
+        int defaultIndex = 3; 
+        Calendar now = Calendar.getInstance();
+        int hour = now.get(Calendar.HOUR_OF_DAY);
+        if (hour >= 6 && hour < 11) defaultIndex = 0; 
+        else if (hour >= 11 && hour < 17) defaultIndex = 1; 
+        else if (hour >= 17 && hour < 22) defaultIndex = 2; 
+        else if (hour >= 22 || hour < 6) defaultIndex = 4; 
+        spinnerMealTime.setSelection(defaultIndex);
 
-                saveMeal(Collections.singletonList(item), dialog);
-
-            } catch (NumberFormatException e) {
-                Toast.makeText(getContext(), "올바른 숫자를 입력해주세요.", Toast.LENGTH_SHORT).show();
+        dialog.findViewById(R.id.btn_add_to_diet).setOnClickListener(v -> {
+            List<MealAnalysisResult> currentItems = adapterRef[0].getItems();
+            if (currentItems.isEmpty()) {
+                Toast.makeText(getContext(), "저장할 음식이 없습니다.", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            int selectedTimeIndex = spinnerMealTime.getSelectedItemPosition();
+            String selectedMealTime = mealTimeValues[selectedTimeIndex];
+            String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Calendar.getInstance().getTime());
+            String serverImagePath = data.getImageUrl();
+
+            List<MealCreateRequest.MealItemRequest> mealRequests = new ArrayList<>();
+            for (MealAnalysisResult item : currentItems) {
+                mealRequests.add(new MealCreateRequest.MealItemRequest(
+                        item.getFoodItem(),
+                        item.getServingSize() != null ? item.getServingSize() : 1.0,
+                        item.getKcal(),
+                        item.getCarbs(),
+                        item.getProtein(),
+                        item.getFat(),
+                        selectedMealTime,
+                        date,
+                        serverImagePath
+                ));
+            }
+
+            saveMeal(mealRequests, dialog);
         });
 
         dialog.show();
+    }
+
+    private void updateTotalCalories(List<MealAnalysisResult> items, TextView view) {
+        double total = 0;
+        for (MealAnalysisResult item : items) {
+            if (item.getKcal() != null) {
+                total += item.getKcal();
+            }
+        }
+        view.setText(String.format(Locale.US, "%,.0f kcal", total));
     }
 
     private void saveMeal(List<MealCreateRequest.MealItemRequest> meals, Dialog dialog) {
@@ -656,14 +705,10 @@ public class HomeFragment extends Fragment {
 
         fabCamera.setVisibility(View.VISIBLE);
         fabGallery.setVisibility(View.VISIBLE);
-        txtCameraLabel.setVisibility(View.VISIBLE);
-        txtGalleryLabel.setVisibility(View.VISIBLE);
 
         fabCamera.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_1));
-        txtCameraLabel.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_1));
         
         fabGallery.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_2));
-        txtGalleryLabel.animate().translationY(-getResources().getDimension(R.dimen.fab_margin_2));
     }
 
     private void closeFabMenu() {
@@ -671,10 +716,8 @@ public class HomeFragment extends Fragment {
         fabAddMeal.setImageResource(R.drawable.ic_plus);
 
         fabCamera.animate().translationY(0).withEndAction(() -> fabCamera.setVisibility(View.GONE));
-        txtCameraLabel.animate().translationY(0).withEndAction(() -> txtCameraLabel.setVisibility(View.GONE));
 
         fabGallery.animate().translationY(0).withEndAction(() -> fabGallery.setVisibility(View.GONE));
-        txtGalleryLabel.animate().translationY(0).withEndAction(() -> txtGalleryLabel.setVisibility(View.GONE));
     }
 
     private void updateCalorieProgress(int currentKcal, int goalKcal) {

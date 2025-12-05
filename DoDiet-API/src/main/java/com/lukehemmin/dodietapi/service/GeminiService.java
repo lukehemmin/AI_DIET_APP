@@ -32,9 +32,9 @@ public class GeminiService {
     private final StorageService storageService;
     private final ObjectMapper objectMapper;
 
-    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+    private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent";
 
-    public Map<String, Object> analyzeFoodImage(String imagePath) {
+    public List<Map<String, Object>> analyzeFoodImage(String imagePath) {
         log.info("Analyzing image at: {}", imagePath);
 
         try {
@@ -56,7 +56,7 @@ public class GeminiService {
             imagePart.put("inline_data", inlineData);
 
             Map<String, Object> textPart = new HashMap<>();
-            textPart.put("text", "Analyze this food image. Identify the main food item, estimate the serving size (in grams), calories (kcal), and macronutrients (carbs, protein, fat in grams). Return ONLY a JSON object with the following structure: {\"foodItem\": \"string\", \"servingSize\": number, \"kcal\": number, \"carbs\": number, \"protein\": number, \"fat\": number}. Do not include markdown formatting.");
+            textPart.put("text", "Analyze this food image. Identify main dishes and side dishes. Group ingredients like boiled eggs or vegetables inside a main dish (e.g., Tteokbokki) into that main dish entry; do not list them separately. However, list distinct side dishes (e.g., Kimchi, Danmuji) or drinks (e.g., Soju) as separate items. IMPORTANT: Return all 'foodItem' names in KOREAN. For each item, estimate serving size (g), calories (kcal), carbs (g), protein (g), and fat (g). Return ONLY a JSON array with this structure: [{\"foodItem\": \"Korean Name\", \"servingSize\": number, \"kcal\": number, \"carbs\": number, \"protein\": number, \"fat\": number}, ...]. Do not include markdown formatting.");
 
             Map<String, Object> content = new HashMap<>();
             content.put("parts", List.of(textPart, imagePart));
@@ -70,6 +70,9 @@ public class GeminiService {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(BodyInserters.fromValue(requestBody))
                     .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(),
+                            clientResponse -> clientResponse.bodyToMono(String.class)
+                                    .map(body -> new RuntimeException("Gemini API Error: " + body)))
                     .bodyToMono(String.class)
                     .block();
 
@@ -78,7 +81,7 @@ public class GeminiService {
 
         } catch (Exception e) {
             log.error("Error analyzing image with Gemini", e);
-            throw new RuntimeException("Failed to analyze food image", e);
+            throw new RuntimeException("Failed to analyze food image: " + e.getMessage(), e);
         }
     }
 
@@ -134,7 +137,7 @@ public class GeminiService {
         }
     }
 
-    private Map<String, Object> parseGeminiResponse(String response) {
+    private List<Map<String, Object>> parseGeminiResponse(String response) {
         try {
             JsonNode rootNode = objectMapper.readTree(response);
             JsonNode candidates = rootNode.path("candidates");
@@ -146,7 +149,13 @@ public class GeminiService {
                     // Clean up markdown if present (e.g. ```json ... ```)
                     text = text.replaceAll("```json", "").replaceAll("```", "").trim();
                     
-                    return objectMapper.readValue(text, new TypeReference<Map<String, Object>>() {});
+                    // Check if it's an array or object. If object, wrap in list.
+                    if (text.startsWith("{")) {
+                         Map<String, Object> singleResult = objectMapper.readValue(text, new TypeReference<Map<String, Object>>() {});
+                         return List.of(singleResult);
+                    } else {
+                         return objectMapper.readValue(text, new TypeReference<List<Map<String, Object>>>() {});
+                    }
                 }
             }
             throw new RuntimeException("Invalid response format from Gemini API");

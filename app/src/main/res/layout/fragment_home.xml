@@ -131,21 +131,7 @@
         app:layout_anchor="@id/fab_main"
         app:layout_anchorGravity="top|center" />
 
-    <TextView
-        android:id="@+id/txt_gallery_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:layout_marginEnd="@dimen/spacing_md"
-        android:background="@drawable/bg_badge_item"
-        android:paddingStart="@dimen/spacing_md"
-        android:paddingTop="@dimen/spacing_xs"
-        android:paddingEnd="@dimen/spacing_md"
-        android:paddingBottom="@dimen/spacing_xs"
-        android:text="갤러리"
-        android:textColor="@color/gray_text"
-        app:layout_anchor="@id/fab_gallery"
-        app:layout_anchorGravity="center_vertical|start" />
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_camera"
@@ -159,21 +145,7 @@
         app:layout_anchor="@id/fab_main"
         app:layout_anchorGravity="top|center" />
 
-    <TextView
-        android:id="@+id/txt_camera_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:layout_marginEnd="@dimen/spacing_md"
-        android:background="@drawable/bg_badge_item"
-        android:paddingStart="@dimen/spacing_md"
-        android:paddingTop="@dimen/spacing_xs"
-        android:paddingEnd="@dimen/spacing_md"
-        android:paddingBottom="@dimen/spacing_xs"
-        android:text="카메라"
-        android:textColor="@color/gray_text"
-        app:layout_anchor="@id/fab_camera"
-        app:layout_anchorGravity="center_vertical|start" />
+
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab_main"
