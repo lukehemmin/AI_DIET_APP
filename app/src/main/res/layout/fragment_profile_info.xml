@@ -20,16 +20,30 @@
             android:orientation="vertical"
             android:padding="@dimen/spacing_xl">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawableStart="@drawable/ic_profile_selector"
-                android:drawablePadding="8dp"
-                android:gravity="center_vertical"
-                android:text="기본 정보"
-                android:textColor="@color/gray_text"
-                android:textSize="@dimen/text_md"
-                android:textStyle="bold" />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@drawable/ic_profile_selector"
+                    android:drawablePadding="8dp"
+                    android:gravity="center_vertical"
+                    android:text="기본 정보"
+                    android:textColor="@color/gray_text"
+                    android:textSize="@dimen/text_md"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/btnEditProfile"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@android:drawable/ic_menu_edit"
+                    android:layout_alignParentEnd="true"
+                    android:contentDescription="수정"
+                    app:tint="@color/gray_subtext" />
+            </RelativeLayout>
 
             <View
                 android:layout_width="match_parent"
@@ -48,9 +62,10 @@
                     android:text="성별"
                     android:textColor="@color/gray_subtext"/>
                 <TextView
+                    android:id="@+id/tvGender"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="남성"
+                    android:text="-"
                     android:textColor="@color/gray_text"
                     android:layout_alignParentEnd="true"/>
             </RelativeLayout>
@@ -65,9 +80,10 @@
                     android:text="나이"
                     android:textColor="@color/gray_subtext"/>
                 <TextView
+                    android:id="@+id/tvAge"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="30 세"
+                    android:text="- 세"
                     android:textColor="@color/gray_text"
                     android:layout_alignParentEnd="true"/>
             </RelativeLayout>
@@ -82,9 +98,10 @@
                     android:text="키"
                     android:textColor="@color/gray_subtext"/>
                 <TextView
+                    android:id="@+id/tvHeight"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="178 cm"
+                    android:text="- cm"
                     android:textColor="@color/gray_text"
                     android:layout_alignParentEnd="true"/>
             </RelativeLayout>
@@ -99,9 +116,28 @@
                     android:text="현재 체중"
                     android:textColor="@color/gray_subtext"/>
                 <TextView
+                    android:id="@+id/tvWeight"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="75 kg"
+                    android:text="- kg"
+                    android:textColor="@color/gray_text"
+                    android:layout_alignParentEnd="true"/>
+            </RelativeLayout>
+            <!-- Activity Level -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_md">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="활동량"
+                    android:textColor="@color/gray_subtext"/>
+                <TextView
+                    android:id="@+id/tvActivityLevel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="-"
                     android:textColor="@color/gray_text"
                     android:layout_alignParentEnd="true"/>
             </RelativeLayout>
@@ -151,9 +187,10 @@
                     android:text="기초대사량(BMR)"
                     android:textColor="@color/gray_subtext"/>
                 <TextView
+                    android:id="@+id/tvBmr"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="1,718 kcal"
+                    android:text="- kcal"
                     android:textColor="@color/gray_text"
                     android:layout_alignParentEnd="true"/>
             </RelativeLayout>
@@ -168,9 +205,10 @@
                     android:text="일일 목표 섭취량"
                     android:textColor="@color/gray_subtext"/>
                 <TextView
+                    android:id="@+id/tvGoalIntake"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="2,663 kcal"
+                    android:text="- kcal"
                     android:textColor="@color/gray_text"
                     android:layout_alignParentEnd="true"/>
             </RelativeLayout>

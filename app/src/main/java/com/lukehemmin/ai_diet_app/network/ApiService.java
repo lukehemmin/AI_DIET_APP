@@ -28,6 +28,8 @@ import okhttp3.MultipartBody;
 
 import com.lukehemmin.ai_diet_app.data.model.BadgeResponse;
 
+import com.lukehemmin.ai_diet_app.data.model.UserProfile;
+
 import java.util.List;
 
 public interface ApiService {
@@ -43,6 +45,12 @@ public interface ApiService {
 
     @POST("api/auth/signup")
     Call<ApiResponse<AuthResponse>> signup(@Body SignupRequest request);
+
+    @GET("api/members/me")
+    Call<ApiResponse<UserProfile>> getProfile();
+
+    @retrofit2.http.PUT("api/members/me")
+    Call<ApiResponse<UserProfile>> updateProfile(@Body UserProfile request);
 
     @Multipart
     @POST("api/meals/analyze")

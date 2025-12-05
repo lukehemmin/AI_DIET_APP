@@ -1,6 +1,7 @@
 package com.lukehemmin.ai_diet_app;
 
 import android.content.Intent;
+import android.os.CountDownTimer;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -10,10 +11,12 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.lukehemmin.ai_diet_app.data.model.ActivityLevel;
 import com.lukehemmin.ai_diet_app.data.model.ApiResponse;
 import com.lukehemmin.ai_diet_app.data.model.AuthResponse;
 import com.lukehemmin.ai_diet_app.data.model.EmailVerificationRequest;
@@ -27,13 +30,15 @@ import retrofit2.Response;
 
 public class SignupActivity extends AppCompatActivity {
 
-    private LinearLayout layoutStep1, layoutCodeVerification, layoutStep2, layoutStep3;
-    private EditText etEmail, etCode, etName, etPassword, etConfirmPassword, etAge, etHeight, etWeight;
+    private View layoutStep1, layoutCodeVerification, layoutStep2, layoutStep3;
+    private EditText etEmail, etCode, etName, etVerifiedEmail, etPassword, etConfirmPassword, etAge, etHeight, etWeight;
     private Button btnSendCode, btnVerifyCode, btnNextToStep3, btnSignup;
     private RadioGroup rgGender;
     private Spinner spinnerActivityLevel;
+    private TextView tvResendGuide;
 
     private String verifiedEmail;
+    private CountDownTimer verificationTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +50,14 @@ public class SignupActivity extends AppCompatActivity {
         setupListeners();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (verificationTimer != null) {
+            verificationTimer.cancel();
+        }
+    }
+
     private void initViews() {
         layoutStep1 = findViewById(R.id.layoutStep1);
         layoutCodeVerification = findViewById(R.id.layoutCodeVerification);
@@ -54,6 +67,7 @@ public class SignupActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.etEmail);
         etCode = findViewById(R.id.etCode);
         etName = findViewById(R.id.etName);
+        etVerifiedEmail = findViewById(R.id.etVerifiedEmail);
         etPassword = findViewById(R.id.etPassword);
         etConfirmPassword = findViewById(R.id.etConfirmPassword);
         etAge = findViewById(R.id.etAge);
@@ -64,14 +78,15 @@ public class SignupActivity extends AppCompatActivity {
         btnVerifyCode = findViewById(R.id.btnVerifyCode);
         btnNextToStep3 = findViewById(R.id.btnNextToStep3);
         btnSignup = findViewById(R.id.btnSignup);
+        
+        tvResendGuide = findViewById(R.id.tvResendGuide);
 
         rgGender = findViewById(R.id.rgGender);
         spinnerActivityLevel = findViewById(R.id.spinnerActivityLevel);
     }
 
     private void setupActivityLevelSpinner() {
-        String[] activityLevels = {"SEDENTARY", "LIGHT", "MODERATE", "ACTIVE", "VERY_ACTIVE"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, activityLevels);
+        ArrayAdapter<ActivityLevel> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, ActivityLevel.values());
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerActivityLevel.setAdapter(adapter);
     }
@@ -90,6 +105,11 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
+        // 버튼 비활성화 및 텍스트 변경
+        btnSendCode.setEnabled(false);
+        btnSendCode.setText("전송 중...");
+        tvResendGuide.setVisibility(View.GONE);
+
         ApiService apiService = RetrofitClient.getApiService();
         apiService.sendVerificationCode(new EmailVerificationRequest(email, null)).enqueue(new Callback<ApiResponse<Void>>() {
             @Override
@@ -98,17 +118,51 @@ public class SignupActivity extends AppCompatActivity {
                     Toast.makeText(SignupActivity.this, "인증번호가 전송되었습니다.", Toast.LENGTH_SHORT).show();
                     layoutCodeVerification.setVisibility(View.VISIBLE);
                     etEmail.setEnabled(false);
-                    btnSendCode.setEnabled(false);
+                    
+                    // 30초 쿨다운 시작
+                    startVerificationCooldown();
                 } else {
                     Toast.makeText(SignupActivity.this, "전송 실패: " + (response.body() != null ? response.body().getMessage() : "오류"), Toast.LENGTH_SHORT).show();
+                    resetSendButton();
                 }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
                 Toast.makeText(SignupActivity.this, "네트워크 오류: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                resetSendButton();
             }
         });
+    }
+
+    private void startVerificationCooldown() {
+        if (verificationTimer != null) {
+            verificationTimer.cancel();
+        }
+
+        // 30초 카운트다운
+        verificationTimer = new CountDownTimer(30000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                btnSendCode.setText(String.format("재전송 (%d초)", millisUntilFinished / 1000));
+            }
+
+            @Override
+            public void onFinish() {
+                btnSendCode.setEnabled(true);
+                btnSendCode.setText("인증번호 재전송");
+
+                // 아직 인증 완료되지 않았다면 안내 문구 표시
+                if (layoutStep2.getVisibility() != View.VISIBLE) {
+                    tvResendGuide.setVisibility(View.VISIBLE);
+                }
+            }
+        }.start();
+    }
+
+    private void resetSendButton() {
+        btnSendCode.setEnabled(true);
+        btnSendCode.setText("인증번호 전송");
     }
 
     private void verifyCode() {
@@ -125,7 +179,14 @@ public class SignupActivity extends AppCompatActivity {
             public void onResponse(Call<ApiResponse<Boolean>> call, Response<ApiResponse<Boolean>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess() && response.body().getData()) {
                     Toast.makeText(SignupActivity.this, "인증되었습니다.", Toast.LENGTH_SHORT).show();
+                    
+                    // 타이머 종료
+                    if (verificationTimer != null) {
+                        verificationTimer.cancel();
+                    }
+
                     verifiedEmail = email;
+                    etVerifiedEmail.setText(verifiedEmail);
                     layoutStep1.setVisibility(View.GONE);
                     layoutStep2.setVisibility(View.VISIBLE);
                 } else {
@@ -167,7 +228,7 @@ public class SignupActivity extends AppCompatActivity {
         Integer age = Integer.parseInt(etAge.getText().toString());
         Double height = Double.parseDouble(etHeight.getText().toString());
         Double weight = Double.parseDouble(etWeight.getText().toString());
-        String activityLevel = spinnerActivityLevel.getSelectedItem().toString();
+        String activityLevel = ((ActivityLevel) spinnerActivityLevel.getSelectedItem()).getServerValue();
 
         SignupRequest.ProfileRequest profile = new SignupRequest.ProfileRequest(gender, age, height, weight, activityLevel);
         SignupRequest request = new SignupRequest(verifiedEmail, password, name, profile);

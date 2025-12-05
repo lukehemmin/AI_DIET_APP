@@ -12,7 +12,8 @@ import java.util.concurrent.TimeUnit;
 public class RetrofitClient {
 
     // Android Emulator uses 10.0.2.2 to access localhost of the host machine
-    private static final String BASE_URL = "http://10.0.2.2:8080/";
+    // For physical device, use your machine's local IP address (e.g., 192.168.0.x)
+    private static final String BASE_URL = "http://192.168.0.27:8080/";
     private static Retrofit retrofit = null;
 
     public static ApiService getApiService() {
