@@ -441,7 +441,7 @@ public class HomeFragment extends Fragment {
         updateTotalCalories(results, txtTotalCalories);
 
         String[] mealTimeLabels = {"아침", "점심", "저녁", "간식", "야식"};
-        final String[] mealTimeValues = {"BREAKFAST", "LUNCH", "DINNER", "SNACK", "MIDNIGHT_SNACK"};
+        final String[] mealTimeValues = {"BREAKFAST", "LUNCH", "DINNER", "SNACK", "LATE_NIGHT"};
 
         ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, mealTimeLabels);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);

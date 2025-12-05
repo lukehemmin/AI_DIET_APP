@@ -8,7 +8,9 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "verification_codes")
+@Table(name = "verification_codes", indexes = {
+    @Index(name = "idx_verification_code_email_created_at", columnList = "email, createdAt")
+})
 @Getter
 @Setter
 @NoArgsConstructor
