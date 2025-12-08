@@ -62,4 +62,10 @@ public class AuthController {
         authService.resetPassword(request.getEmail(), request.getCode(), request.getNewPassword());
         return ResponseEntity.ok(ApiResponse.success(null));
     }
+
+    @PostMapping("/google-login")
+    public ResponseEntity<ApiResponse<AuthResponse>> googleLogin(@RequestBody com.lukehemmin.dodietapi.dto.GoogleLoginRequest request) {
+        AuthResponse response = authService.googleLogin(request);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
 }

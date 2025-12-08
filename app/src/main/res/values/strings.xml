@@ -66,4 +66,7 @@
     <string name="save">저장</string>
     <string name="add">추가</string>
     <string name="today">오늘</string>
+    
+    <!-- Auth -->
+    <string name="default_web_client_id">1021694961860-cn6008vavbgjn82prj1gfdoakcm12qd6.apps.googleusercontent.com</string>
 </resources>

@@ -9,8 +9,16 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -22,13 +30,121 @@ public class LoginActivity extends AppCompatActivity {
     private MaterialButton btnLogin, btnGoogleLogin;
     private TextView tvFindAccount, tvSignUp;
 
+    private GoogleSignInClient mGoogleSignInClient;
+    private ActivityResultLauncher<Intent> googleSignInLauncher;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        // 자동 로그인 체크
+        if (checkAutoLogin()) {
+            return; // 자동 로그인 성공 시 여기서 종료
+        }
+        
         setContentView(R.layout.activity_login);
 
         initViews();
+        setupGoogleSignIn();
         setupListeners();
+    }
+    
+    private void setupGoogleSignIn() {
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso);
+
+        googleSignInLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == RESULT_OK) {
+                        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
+                        handleSignInResult(task);
+                    }
+                });
+    }
+
+    private void handleSignInResult(Task<GoogleSignInAccount> completedTask) {
+        try {
+            GoogleSignInAccount account = completedTask.getResult(ApiException.class);
+            String idToken = account.getIdToken();
+            
+            if (idToken != null) {
+                sendGoogleTokenToBackend(idToken);
+            } else {
+                Toast.makeText(this, "Google Sign-In failed: No ID Token", Toast.LENGTH_SHORT).show();
+            }
+        } catch (ApiException e) {
+            android.util.Log.w("LoginActivity", "signInResult:failed code=" + e.getStatusCode());
+            Toast.makeText(this, "Google 로그인 실패", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void sendGoogleTokenToBackend(String idToken) {
+        // Show loading (Optional: add ProgressBar)
+        btnLogin.setEnabled(false);
+        btnGoogleLogin.setEnabled(false);
+        
+        com.lukehemmin.ai_diet_app.network.ApiService apiService = 
+                com.lukehemmin.ai_diet_app.network.RetrofitClient.getApiService();
+        
+        com.lukehemmin.ai_diet_app.data.model.GoogleLoginRequest request = 
+                new com.lukehemmin.ai_diet_app.data.model.GoogleLoginRequest(idToken);
+
+        apiService.googleLogin(request).enqueue(new retrofit2.Callback<com.lukehemmin.ai_diet_app.data.model.ApiResponse<com.lukehemmin.ai_diet_app.data.model.AuthResponse>>() {
+            @Override
+            public void onResponse(retrofit2.Call<com.lukehemmin.ai_diet_app.data.model.ApiResponse<com.lukehemmin.ai_diet_app.data.model.AuthResponse>> call, 
+                                   retrofit2.Response<com.lukehemmin.ai_diet_app.data.model.ApiResponse<com.lukehemmin.ai_diet_app.data.model.AuthResponse>> response) {
+                btnLogin.setEnabled(true);
+                btnGoogleLogin.setEnabled(true);
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    String token = response.body().getData().getAccessToken();
+                    
+                    // Save token
+                    android.content.SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+                    android.content.SharedPreferences.Editor editor = prefs.edit();
+                    editor.putBoolean("is_logged_in", true);
+                    editor.putString("auth_token", token);
+                    editor.apply();
+
+                    Toast.makeText(LoginActivity.this, "로그인 성공!", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(LoginActivity.this, "로그인 실패: " + (response.body() != null ? response.body().getMessage() : "서버 오류"), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<com.lukehemmin.ai_diet_app.data.model.ApiResponse<com.lukehemmin.ai_diet_app.data.model.AuthResponse>> call, Throwable t) {
+                btnLogin.setEnabled(true);
+                btnGoogleLogin.setEnabled(true);
+                Toast.makeText(LoginActivity.this, "네트워크 오류: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                android.util.Log.e("LoginActivity", "Login error", t);
+            }
+        });
+    }
+    
+    /**
+     * 저장된 토큰이 있으면 자동 로그인
+     * @return true if auto login successful
+     */
+    private boolean checkAutoLogin() {
+        android.content.SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        boolean isLoggedIn = prefs.getBoolean("is_logged_in", false);
+        String token = prefs.getString("auth_token", null);
+        
+        if (isLoggedIn && token != null && !token.isEmpty()) {
+            // 토큰이 있으면 바로 MainActivity로 이동
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+            return true;
+        }
+        return false;
     }
 
     private void initViews() {
@@ -52,7 +168,8 @@ public class LoginActivity extends AppCompatActivity {
 
         // Google Login
         btnGoogleLogin.setOnClickListener(v -> {
-            Toast.makeText(this, "구글 로그인은 추후 지원 예정입니다.", Toast.LENGTH_SHORT).show();
+            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+            googleSignInLauncher.launch(signInIntent);
         });
 
         // Find Account

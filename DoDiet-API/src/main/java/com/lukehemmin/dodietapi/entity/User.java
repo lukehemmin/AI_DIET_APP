@@ -49,6 +49,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ActivityLevel activityLevel; // SEDENTARY, LIGHT, MODERATE, ACTIVE, VERY_ACTIVE
+
+    @Enumerated(EnumType.STRING)
+    private AuthProvider authProvider;
+
+    private String providerId;
     
     @ElementCollection
     @CollectionTable(name = "user_badges", joinColumns = @JoinColumn(name = "user_id"))

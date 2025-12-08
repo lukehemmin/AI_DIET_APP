@@ -39,6 +39,9 @@ public interface ApiService {
     @POST("api/auth/login")
     Call<ApiResponse<AuthResponse>> login(@Body LoginRequest request);
 
+    @POST("api/auth/google-login")
+    Call<ApiResponse<AuthResponse>> googleLogin(@Body com.lukehemmin.ai_diet_app.data.model.GoogleLoginRequest request);
+
     @POST("api/auth/find-id")
     Call<ApiResponse<java.util.List<String>>> findId(@Body com.lukehemmin.ai_diet_app.data.model.FindIdRequest request);
 

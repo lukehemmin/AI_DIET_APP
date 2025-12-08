@@ -75,7 +75,8 @@ public class ProfileFragment extends Fragment {
     }
 
     private void openSettings() {
-        // TODO: Open settings
+        android.content.Intent intent = new android.content.Intent(getContext(), com.lukehemmin.ai_diet_app.SettingsActivity.class);
+        startActivity(intent);
     }
 
     private static class ProfilePagerAdapter extends FragmentStateAdapter {

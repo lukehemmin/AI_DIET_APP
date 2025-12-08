@@ -4,7 +4,9 @@ import com.lukehemmin.dodietapi.dto.request.LoginRequest;
 import com.lukehemmin.dodietapi.dto.request.SignupRequest;
 import com.lukehemmin.dodietapi.dto.response.AuthResponse;
 import com.lukehemmin.dodietapi.entity.User;
+import com.lukehemmin.dodietapi.entity.VerificationCode;
 import com.lukehemmin.dodietapi.repository.UserRepository;
+import com.lukehemmin.dodietapi.repository.VerificationCodeRepository;
 import com.lukehemmin.dodietapi.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,14 +17,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.lukehemmin.dodietapi.entity.VerificationCode;
-import com.lukehemmin.dodietapi.repository.VerificationCodeRepository;
 import java.time.LocalDateTime;
 import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+
+    // 앱의 strings.xml에 입력한 값과 동일해야 합니다.
+    private static final String GOOGLE_CLIENT_ID = "1021694961860-cn6008vavbgjn82prj1gfdoakcm12qd6.apps.googleusercontent.com";
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -165,5 +168,90 @@ public class AuthService {
         
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+    }
+
+    @Transactional
+    public AuthResponse googleLogin(com.lukehemmin.dodietapi.dto.GoogleLoginRequest request) {
+        // 1. Verify Google Token
+        java.util.Map<String, Object> googleInfo = verifyGoogleToken(request.getIdToken());
+        String email = (String) googleInfo.get("email");
+        String name = (String) googleInfo.get("name");
+        String providerId = (String) googleInfo.get("sub");
+        if (name == null) name = "Google User";
+
+        // 2. Check if user exists
+        User user = userRepository.findByEmail(email).orElse(null);
+
+        if (user == null) {
+            // 3. Auto Signup if not exists
+            user = new User();
+            user.setEmail(email);
+            user.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString())); // Random password
+            user.setName(name);
+            user.setAuthProvider(com.lukehemmin.dodietapi.entity.AuthProvider.GOOGLE);
+            user.setProviderId(providerId);
+            
+            // Set Default Values for required fields
+            user.setGender(com.lukehemmin.dodietapi.entity.Gender.MALE);
+            user.setBirthDate(java.time.LocalDate.now().minusYears(25));
+            user.setAge(25);
+            user.setHeight(170.0);
+            user.setWeight(65.0);
+            user.setActivityLevel(com.lukehemmin.dodietapi.entity.ActivityLevel.SEDENTARY);
+            
+            user = userRepository.save(user);
+        } else {
+             if (user.getAuthProvider() == null) {
+                 user.setAuthProvider(com.lukehemmin.dodietapi.entity.AuthProvider.LOCAL);
+             }
+             
+             // Link Google Account if not linked yet
+             if (user.getProviderId() == null) {
+                 user.setProviderId(providerId);
+                 userRepository.save(user);
+             }
+        }
+
+        // 4. Generate Tokens manually since we don't have password for authenticationManager
+        org.springframework.security.core.userdetails.UserDetails userDetails = 
+            org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password("")
+                .authorities(java.util.Collections.emptyList())
+                .build();
+                
+        UsernamePasswordAuthenticationToken authentication = 
+            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
+        String accessToken = tokenProvider.generateToken(authentication);
+        String refreshToken = tokenProvider.generateRefreshToken(authentication);
+
+        return AuthResponse.builder()
+                .user(AuthResponse.UserDto.from(user))
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    private java.util.Map<String, Object> verifyGoogleToken(String idToken) {
+        try {
+            org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+            String url = "https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken;
+            @SuppressWarnings("unchecked")
+            java.util.Map<String, Object> response = restTemplate.getForObject(url, java.util.Map.class);
+            
+            if (response == null || response.get("email") == null) {
+                throw new RuntimeException("Invalid Google Token");
+            }
+            
+            String aud = (String) response.get("aud");
+            if (aud == null || !aud.equals(GOOGLE_CLIENT_ID)) {
+                throw new RuntimeException("Invalid Google Token Audience");
+            }
+            
+            return response;
+        } catch (Exception e) {
+            throw new RuntimeException("Google Token Verification Failed: " + e.getMessage());
+        }
     }
 }
