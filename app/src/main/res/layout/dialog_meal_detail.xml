@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog_rounded"
+    android:padding="@dimen/spacing_lg">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="@dimen/spacing_md">
+
+        <!-- Meal Time Badge -->
+        <TextView
+            android:id="@+id/txt_meal_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="저녁"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:background="@drawable/bg_time_badge"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- Close Button -->
+        <ImageView
+            android:id="@+id/btn_close"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_close"
+            android:contentDescription="닫기"
+            android:padding="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+    </LinearLayout>
+
+    <!-- Image Carousel -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:layout_marginBottom="@dimen/spacing_md">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp">
+
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/vp_meal_images"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/gray_70" />
+        </androidx.cardview.widget.CardView>
+
+        <!-- Page Indicator -->
+        <LinearLayout
+            android:id="@+id/indicator_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="8dp"
+            android:orientation="horizontal"
+            android:visibility="gone"/>
+    </FrameLayout>
+
+    <!-- Total Summary -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/bg_card_light_blue"
+        android:padding="@dimen/spacing_md"
+        android:layout_marginBottom="@dimen/spacing_md"
+        android:gravity="center">
+
+        <TextView
+            android:id="@+id/txt_total_summary"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="총 1,580 kcal"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary_blue" />
+    </LinearLayout>
+
+    <!-- Food Items List -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="음식 목록"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@color/gray_text"
+        android:layout_marginBottom="@dimen/spacing_sm" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_food_items"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="300dp"
+        android:nestedScrollingEnabled="true" />
+
+</LinearLayout>

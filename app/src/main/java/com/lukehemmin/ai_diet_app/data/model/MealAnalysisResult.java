@@ -7,6 +7,8 @@ public class MealAnalysisResult {
     private Double protein;
     private Double fat;
     private Double servingSize;
+    private Boolean isSnack;
+    private String imageUrl;  // 이 음식이 분석된 이미지 URL
 
     public String getFoodItem() {
         return foodItem;
@@ -54,5 +56,21 @@ public class MealAnalysisResult {
 
     public void setServingSize(Double servingSize) {
         this.servingSize = servingSize;
+    }
+
+    public Boolean getIsSnack() {
+        return isSnack != null ? isSnack : false;
+    }
+
+    public void setIsSnack(Boolean isSnack) {
+        this.isSnack = isSnack;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

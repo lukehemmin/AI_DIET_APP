@@ -22,15 +22,14 @@ public class WaterIntakeService {
     private static final int DEFAULT_GOAL_GLASSES = 8;
 
     @Transactional(readOnly = true)
-    public WaterIntakeResponse getTodayIntake(UUID userId) {
+    public WaterIntakeResponse getIntakeByDate(UUID userId, LocalDate date) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        LocalDate today = LocalDate.now();
-        WaterIntake waterIntake = waterIntakeRepository.findByUserAndDate(user, today)
+        WaterIntake waterIntake = waterIntakeRepository.findByUserAndDate(user, date)
                 .orElse(WaterIntake.builder()
                         .user(user)
-                        .date(today)
+                        .date(date)
                         .glasses(0)
                         .build());
 
@@ -38,32 +37,34 @@ public class WaterIntakeService {
     }
 
     @Transactional
-    public WaterIntakeResponse addGlass(UUID userId) {
+    public WaterIntakeResponse addGlass(UUID userId, LocalDate date) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        LocalDate today = LocalDate.now();
-        WaterIntake waterIntake = waterIntakeRepository.findByUserAndDate(user, today)
+        WaterIntake waterIntake = waterIntakeRepository.findByUserAndDate(user, date)
                 .orElse(WaterIntake.builder()
                         .user(user)
-                        .date(today)
+                        .date(date)
                         .glasses(0)
                         .build());
 
-        waterIntake.setGlasses(waterIntake.getGlasses() + 1);
+        waterIntake.setGlasses(Math.min(waterIntake.getGlasses() + 1, 8));
         WaterIntake saved = waterIntakeRepository.save(waterIntake);
 
         return mapToResponse(saved);
     }
 
     @Transactional
-    public WaterIntakeResponse removeGlass(UUID userId) {
+    public WaterIntakeResponse removeGlass(UUID userId, LocalDate date) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        LocalDate today = LocalDate.now();
-        WaterIntake waterIntake = waterIntakeRepository.findByUserAndDate(user, today)
-                .orElseThrow(() -> new RuntimeException("No water intake record for today"));
+        WaterIntake waterIntake = waterIntakeRepository.findByUserAndDate(user, date)
+                .orElse(WaterIntake.builder()
+                        .user(user)
+                        .date(date)
+                        .glasses(0)
+                        .build());
 
         if (waterIntake.getGlasses() > 0) {
             waterIntake.setGlasses(waterIntake.getGlasses() - 1);

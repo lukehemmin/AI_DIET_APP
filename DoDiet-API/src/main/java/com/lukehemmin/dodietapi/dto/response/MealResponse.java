@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
@@ -26,6 +27,7 @@ public class MealResponse {
     private LocalDate date;
     private String imageUrl;
     private String thumbnailUrl;
+    private LocalDateTime createdAt;
 
     public static MealResponse from(Meal meal) {
         return MealResponse.builder()
@@ -40,6 +42,7 @@ public class MealResponse {
                 .date(meal.getDate())
                 .imageUrl(meal.getImageUrl())
                 .thumbnailUrl(meal.getThumbnailUrl())
+                .createdAt(meal.getCreatedAt())
                 .build();
     }
 }

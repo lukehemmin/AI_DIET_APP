@@ -71,6 +71,9 @@ public interface ApiService {
     @POST("api/meals")
     Call<ApiResponse<java.util.Map<String, java.util.List<com.lukehemmin.ai_diet_app.data.model.MealResponse>>>> createMeals(@Body com.lukehemmin.ai_diet_app.data.model.MealCreateRequest request);
 
+    @GET("api/meals")
+    Call<ApiResponse<java.util.Map<String, Object>>> getMeals(@retrofit2.http.Query("startDate") String date);
+
     @POST("api/ai/chat")
     Call<ApiResponse<ChatResponse>> chat(@Body ChatRequest request);
 
@@ -106,4 +109,14 @@ public interface ApiService {
     // Badges
     @GET("api/badges/my")
     Call<ApiResponse<List<BadgeResponse>>> getMyBadges();
+
+    // Water Intake
+    @GET("api/water")
+    Call<ApiResponse<java.util.Map<String, Object>>> getWaterIntake(@retrofit2.http.Query("date") String date);
+
+    @POST("api/water/add")
+    Call<ApiResponse<java.util.Map<String, Object>>> addWaterGlass(@retrofit2.http.Query("date") String date);
+
+    @POST("api/water/remove")
+    Call<ApiResponse<java.util.Map<String, Object>>> removeWaterGlass(@retrofit2.http.Query("date") String date);
 }

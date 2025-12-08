@@ -59,9 +59,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import android.widget.FrameLayout;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -140,13 +143,21 @@ public class HomeFragment extends Fragment {
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
-                    Uri selectedImage = result.getData().getData();
-                    try {
-                        File file = FileUtils.getFileFromUri(requireContext(), selectedImage);
-                        File compressedFile = FileUtils.compressImage(requireContext(), file);
-                        analyzeImage(compressedFile);
-                    } catch (Exception e) {
-                        Toast.makeText(getContext(), "이미지 처리 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                    List<Uri> selectedImages = new ArrayList<>();
+                    
+                    // Check for multiple images
+                    if (result.getData().getClipData() != null) {
+                        int count = result.getData().getClipData().getItemCount();
+                        for (int i = 0; i < count; i++) {
+                            selectedImages.add(result.getData().getClipData().getItemAt(i).getUri());
+                        }
+                    } else if (result.getData().getData() != null) {
+                        // Single image
+                        selectedImages.add(result.getData().getData());
+                    }
+                    
+                    if (!selectedImages.isEmpty()) {
+                        analyzeMultipleImages(selectedImages);
                     }
                 }
             }
@@ -275,6 +286,11 @@ public class HomeFragment extends Fragment {
             txtCurrentDate.setText(new SimpleDateFormat("M월 d일", Locale.KOREA).format(date.getTime()));
             btnNextDate.setVisibility(View.VISIBLE);
         }
+        
+        // Load meals for the selected date
+        loadMealsForDate(currentSelectedDate);
+        // Load water intake for the selected date
+        loadWaterIntakeForDate(currentSelectedDate);
     }
 
     private boolean isSameDay(Calendar c1, Calendar c2) {
@@ -299,6 +315,7 @@ public class HomeFragment extends Fragment {
 
     private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         galleryLauncher.launch(intent);
     }
 
@@ -378,6 +395,12 @@ public class HomeFragment extends Fragment {
                 dismissLoadingDialog();
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     MealAnalysisResponse data = response.body().getData();
+                    // 단일 이미지 분석 결과에도 imageUrl 설정
+                    if (data.getAnalysisResults() != null && data.getImageUrl() != null) {
+                        for (MealAnalysisResult result : data.getAnalysisResults()) {
+                            result.setImageUrl(data.getImageUrl());
+                        }
+                    }
                     showAnalysisResultDialog(file, data);
                 } else {
                     String errorMessage = "오류";
@@ -412,6 +435,92 @@ public class HomeFragment extends Fragment {
         });
     }
 
+    private void analyzeMultipleImages(List<Uri> imageUris) {
+        showLoadingDialog();
+        
+        List<MealAnalysisResult> allResults = new ArrayList<>();
+        List<String> imageUrls = new ArrayList<>();
+        final int[] processedCount = {0};
+        final int totalCount = imageUris.size();
+        
+        for (Uri uri : imageUris) {
+            try {
+                File file = FileUtils.getFileFromUri(requireContext(), uri);
+                File compressedFile = FileUtils.compressImage(requireContext(), file);
+                
+                RequestBody requestFile = RequestBody.create(MediaType.parse("image/jpeg"), compressedFile);
+                MultipartBody.Part body = MultipartBody.Part.createFormData("image", compressedFile.getName(), requestFile);
+                
+                apiService.analyzeMeal(body).enqueue(new Callback<ApiResponse<MealAnalysisResponse>>() {
+                    @Override
+                    public void onResponse(Call<ApiResponse<MealAnalysisResponse>> call, Response<ApiResponse<MealAnalysisResponse>> response) {
+                        processedCount[0]++;
+                        
+                        if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                            MealAnalysisResponse data = response.body().getData();
+                            String currentImageUrl = data.getImageUrl();
+                            if (data.getAnalysisResults() != null) {
+                                // 각 분석 결과에 해당 이미지 URL 설정
+                                for (MealAnalysisResult result : data.getAnalysisResults()) {
+                                    result.setImageUrl(currentImageUrl);
+                                }
+                                allResults.addAll(data.getAnalysisResults());
+                            }
+                            if (currentImageUrl != null) {
+                                imageUrls.add(currentImageUrl);
+                            }
+                        }
+                        
+                        // All images processed
+                        if (processedCount[0] >= totalCount) {
+                            dismissLoadingDialog();
+                            if (!allResults.isEmpty()) {
+                                MealAnalysisResponse combinedResponse = new MealAnalysisResponse();
+                                combinedResponse.setAnalysisResults(allResults);
+                                combinedResponse.setImageUrl(imageUrls.isEmpty() ? null : imageUrls.get(0));
+                                combinedResponse.setImageUrls(new ArrayList<>(imageUrls));
+                                showAnalysisResultDialog(null, combinedResponse);
+                            } else {
+                                Toast.makeText(getContext(), "분석 결과가 없습니다.", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+                    
+                    @Override
+                    public void onFailure(Call<ApiResponse<MealAnalysisResponse>> call, Throwable t) {
+                        processedCount[0]++;
+                        if (processedCount[0] >= totalCount) {
+                            dismissLoadingDialog();
+                            if (!allResults.isEmpty()) {
+                                MealAnalysisResponse combinedResponse = new MealAnalysisResponse();
+                                combinedResponse.setAnalysisResults(allResults);
+                                combinedResponse.setImageUrl(imageUrls.isEmpty() ? null : imageUrls.get(0));
+                                combinedResponse.setImageUrls(new ArrayList<>(imageUrls));
+                                showAnalysisResultDialog(null, combinedResponse);
+                            } else {
+                                Toast.makeText(getContext(), "모든 이미지 분석에 실패했습니다.", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    }
+                });
+            } catch (Exception e) {
+                processedCount[0]++;
+                if (processedCount[0] >= totalCount) {
+                    dismissLoadingDialog();
+                    if (!allResults.isEmpty()) {
+                        MealAnalysisResponse combinedResponse = new MealAnalysisResponse();
+                        combinedResponse.setAnalysisResults(allResults);
+                        combinedResponse.setImageUrl(imageUrls.isEmpty() ? null : imageUrls.get(0));
+                        combinedResponse.setImageUrls(new ArrayList<>(imageUrls));
+                        showAnalysisResultDialog(null, combinedResponse);
+                    } else {
+                        Toast.makeText(getContext(), "이미지 처리 중 오류가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }
+    }
+
     private void showAnalysisResultDialog(File imageFile, MealAnalysisResponse data) {
         final Dialog dialog = new Dialog(getContext());
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -419,8 +528,33 @@ public class HomeFragment extends Fragment {
         dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        ImageView ivAnalyzed = dialog.findViewById(R.id.iv_analyzed_image);
-        ivAnalyzed.setImageURI(Uri.fromFile(imageFile));
+        // Setup ViewPager2 for image carousel
+        androidx.viewpager2.widget.ViewPager2 vpImages = dialog.findViewById(R.id.vp_analyzed_images);
+        LinearLayout indicatorContainer = dialog.findViewById(R.id.indicator_container);
+        
+        List<String> imageUrls = data.getImageUrls();
+        if (imageFile != null) {
+            // Single file - add to list
+            imageUrls = new ArrayList<>();
+            imageUrls.add(Uri.fromFile(imageFile).toString());
+        }
+        
+        if (!imageUrls.isEmpty()) {
+            ImageCarouselAdapter carouselAdapter = new ImageCarouselAdapter(imageUrls);
+            vpImages.setAdapter(carouselAdapter);
+            
+            // Setup page indicator if more than 1 image
+            if (imageUrls.size() > 1) {
+                indicatorContainer.setVisibility(View.VISIBLE);
+                setupPageIndicator(indicatorContainer, imageUrls.size());
+                vpImages.registerOnPageChangeCallback(new androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+                    @Override
+                    public void onPageSelected(int position) {
+                        updatePageIndicator(indicatorContainer, position);
+                    }
+                });
+            }
+        }
 
         RecyclerView rvAnalysisResults = dialog.findViewById(R.id.rv_analysis_results);
         TextView txtTotalCalories = dialog.findViewById(R.id.txt_total_calories);
@@ -447,13 +581,28 @@ public class HomeFragment extends Fragment {
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerMealTime.setAdapter(spinnerAdapter);
 
-        int defaultIndex = 3; 
-        Calendar now = Calendar.getInstance();
-        int hour = now.get(Calendar.HOUR_OF_DAY);
-        if (hour >= 6 && hour < 11) defaultIndex = 0; 
-        else if (hour >= 11 && hour < 17) defaultIndex = 1; 
-        else if (hour >= 17 && hour < 22) defaultIndex = 2; 
-        else if (hour >= 22 || hour < 6) defaultIndex = 4; 
+        // Determine meal time: check if all items are snacks
+        boolean allSnacks = true;
+        for (MealAnalysisResult item : results) {
+            if (!item.getIsSnack()) {
+                allSnacks = false;
+                break;
+            }
+        }
+
+        int defaultIndex;
+        if (allSnacks && !results.isEmpty()) {
+            // All items are snacks → select "간식"
+            defaultIndex = 3;
+        } else {
+            // At least one regular meal item → select by time
+            Calendar now = Calendar.getInstance();
+            int hour = now.get(Calendar.HOUR_OF_DAY);
+            if (hour >= 6 && hour < 11) defaultIndex = 0;       // 아침
+            else if (hour >= 11 && hour < 17) defaultIndex = 1; // 점심
+            else if (hour >= 17 && hour < 22) defaultIndex = 2; // 저녁
+            else defaultIndex = 4;                               // 야식
+        }
         spinnerMealTime.setSelection(defaultIndex);
 
         dialog.findViewById(R.id.btn_add_to_diet).setOnClickListener(v -> {
@@ -465,11 +614,14 @@ public class HomeFragment extends Fragment {
 
             int selectedTimeIndex = spinnerMealTime.getSelectedItemPosition();
             String selectedMealTime = mealTimeValues[selectedTimeIndex];
-            String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Calendar.getInstance().getTime());
-            String serverImagePath = data.getImageUrl();
+            // Use selected date instead of current date
+            String date = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(currentSelectedDate.getTime());
+            String fallbackImageUrl = data.getImageUrl();  // 개별 imageUrl이 없는 경우 대비
 
             List<MealCreateRequest.MealItemRequest> mealRequests = new ArrayList<>();
             for (MealAnalysisResult item : currentItems) {
+                // 각 음식 항목에 해당하는 이미지 URL 사용 (없으면 fallback)
+                String itemImageUrl = item.getImageUrl() != null ? item.getImageUrl() : fallbackImageUrl;
                 mealRequests.add(new MealCreateRequest.MealItemRequest(
                         item.getFoodItem(),
                         item.getServingSize() != null ? item.getServingSize() : 1.0,
@@ -479,7 +631,7 @@ public class HomeFragment extends Fragment {
                         item.getFat(),
                         selectedMealTime,
                         date,
-                        serverImagePath
+                        itemImageUrl
                 ));
             }
 
@@ -506,7 +658,8 @@ public class HomeFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
                     Toast.makeText(getContext(), "식단이 저장되었습니다.", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
-                    // TODO: Refresh meal list
+                    // Refresh meal list
+                    loadMealsForDate(currentSelectedDate);
                 } else {
                     Toast.makeText(getContext(), "저장 실패: " + (response.body() != null ? response.body().getMessage() : "오류"), Toast.LENGTH_SHORT).show();
                 }
@@ -641,16 +794,76 @@ public class HomeFragment extends Fragment {
         updateWaterGlasses(0);
         
         txtCurrentDate.setText("오늘");
+        // Hide next button for today (can't go to future)
+        btnNextDate.setVisibility(View.INVISIBLE);
         
-        // Show empty state
+        // Show empty state initially
         showEmptyState(true);
         updateCalorieProgress(0, 2662);
+        
+        // Load meals from server
+        loadMealsForDate(currentSelectedDate);
+        // Load water intake from server
+        loadWaterIntakeForDate(currentSelectedDate);
     }
+
+    private void loadWaterIntakeForDate(Calendar date) {
+        String dateStr = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date.getTime());
+        
+        apiService.getWaterIntake(dateStr).enqueue(new Callback<ApiResponse<Map<String, Object>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Map<String, Object>>> call, Response<ApiResponse<Map<String, Object>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Map<String, Object> data = response.body().getData();
+                    int glasses = 0;
+                    if (data.get("glasses") != null) {
+                        glasses = ((Number) data.get("glasses")).intValue();
+                    }
+                    txtWaterCount.setText(String.valueOf(glasses));
+                    updateWaterGlasses(glasses);
+                } else {
+                    txtWaterCount.setText("0");
+                    updateWaterGlasses(0);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Map<String, Object>>> call, Throwable t) {
+                txtWaterCount.setText("0");
+                updateWaterGlasses(0);
+            }
+        });
+    }
+
     private void updateWaterIntake(int delta) {
-        int current = Integer.parseInt(txtWaterCount.getText().toString());
-        int newValue = Math.max(0, Math.min(8, current + delta));
-        txtWaterCount.setText(String.valueOf(newValue));
-        updateWaterGlasses(newValue);
+        String dateStr = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(currentSelectedDate.getTime());
+        
+        Call<ApiResponse<Map<String, Object>>> call;
+        if (delta > 0) {
+            call = apiService.addWaterGlass(dateStr);
+        } else {
+            call = apiService.removeWaterGlass(dateStr);
+        }
+        
+        call.enqueue(new Callback<ApiResponse<Map<String, Object>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Map<String, Object>>> call, Response<ApiResponse<Map<String, Object>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Map<String, Object> data = response.body().getData();
+                    int glasses = 0;
+                    if (data.get("glasses") != null) {
+                        glasses = ((Number) data.get("glasses")).intValue();
+                    }
+                    txtWaterCount.setText(String.valueOf(glasses));
+                    updateWaterGlasses(glasses);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Map<String, Object>>> call, Throwable t) {
+                // Ignore failure
+            }
+        });
     }
 
     private void updateWaterGlasses(int count) {
@@ -750,29 +963,496 @@ public class HomeFragment extends Fragment {
             colors.add(getContext().getColor(R.color.gray_70));
         } else {
             if (protein > 0) {
-                entries.add(new PieEntry(protein, "단백질"));
+                entries.add(new PieEntry(protein));
                 colors.add(getContext().getColor(R.color.primary_green));
             }
             if (fat > 0) {
-                entries.add(new PieEntry(fat, "지방"));
+                entries.add(new PieEntry(fat));
                 colors.add(getContext().getColor(R.color.primary_orange));
             }
             if (carbs > 0) {
-                entries.add(new PieEntry(carbs, "탄수화물"));
+                entries.add(new PieEntry(carbs));
                 colors.add(getContext().getColor(R.color.primary_blue));
             }
         }
 
-        PieDataSet dataSet = new PieDataSet(entries, "Nutrients");
+        PieDataSet dataSet = new PieDataSet(entries, "");
         dataSet.setDrawIcons(false);
+        dataSet.setDrawValues(false);
         dataSet.setSliceSpace(3f);
         dataSet.setSelectionShift(0f);
         dataSet.setColors(colors);
 
         PieData data = new PieData(dataSet);
-        data.setValueTextSize(0f);
+        data.setDrawValues(false);
 
+        pieChart.setDrawEntryLabels(false);
         pieChart.setData(data);
         pieChart.invalidate();
+    }
+
+    private void loadMealsForDate(Calendar date) {
+        String dateStr = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date.getTime());
+        
+        apiService.getMeals(dateStr).enqueue(new Callback<ApiResponse<Map<String, Object>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Map<String, Object>>> call, Response<ApiResponse<Map<String, Object>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Map<String, Object> data = response.body().getData();
+                    
+                    // Parse meals list
+                    List<Map<String, Object>> mealsList = (List<Map<String, Object>>) data.get("meals");
+                    
+                    if (mealsList == null || mealsList.isEmpty()) {
+                        showEmptyState(true);
+                        updateCalorieProgress(0, 2662);
+                        txtCurrentKcal.setText("0");
+                        updatePieChart(0, 0, 0);
+                        txtCarbsLegend.setText("탄수화물 (0%)");
+                        txtProteinLegend.setText("단백질 (0%)");
+                        txtFatLegend.setText("지방 (0%)");
+                    } else {
+                        showEmptyState(false);
+                        
+                        // Calculate totals
+                        double totalKcal = 0;
+                        double totalCarbs = 0;
+                        double totalProtein = 0;
+                        double totalFat = 0;
+                        
+                        // Parse all meals first
+                        List<MealResponse> allMeals = new ArrayList<>();
+                        for (Map<String, Object> mealMap : mealsList) {
+                            MealResponse meal = new MealResponse();
+                            meal.setId(mealMap.get("id") != null ? String.valueOf(mealMap.get("id")) : null);
+                            meal.setFoodItem((String) mealMap.get("foodItem"));
+                            meal.setKcal(mealMap.get("kcal") != null ? ((Number) mealMap.get("kcal")).doubleValue() : 0);
+                            meal.setCarbs(mealMap.get("carbs") != null ? ((Number) mealMap.get("carbs")).doubleValue() : 0);
+                            meal.setProtein(mealMap.get("protein") != null ? ((Number) mealMap.get("protein")).doubleValue() : 0);
+                            meal.setFat(mealMap.get("fat") != null ? ((Number) mealMap.get("fat")).doubleValue() : 0);
+                            meal.setMealTime((String) mealMap.get("mealTime"));
+                            meal.setImageUrl((String) mealMap.get("imageUrl"));
+                            meal.setCreatedAt((String) mealMap.get("createdAt"));
+                            allMeals.add(meal);
+                            
+                            totalKcal += meal.getKcal();
+                            totalCarbs += meal.getCarbs();
+                            totalProtein += meal.getProtein();
+                            totalFat += meal.getFat();
+                        }
+                        
+                        // Sort by createdAt
+                        Collections.sort(allMeals, (a, b) -> {
+                            String aTime = a.getCreatedAt();
+                            String bTime = b.getCreatedAt();
+                            if (aTime == null) return 1;
+                            if (bTime == null) return -1;
+                            return aTime.compareTo(bTime);
+                        });
+                        
+                        // Group meals - main meals (BREAKFAST, LUNCH, DINNER) are single groups
+                        // SNACK, LATE_NIGHT are grouped by their order
+                        Map<String, List<MealResponse>> mainMealGroups = new LinkedHashMap<>();
+                        Map<String, String> firstCreatedAt = new LinkedHashMap<>();
+                        
+                        for (MealResponse meal : allMeals) {
+                            String mealTime = meal.getMealTime() != null ? meal.getMealTime() : "OTHER";
+                            
+                            if (!mainMealGroups.containsKey(mealTime)) {
+                                mainMealGroups.put(mealTime, new ArrayList<>());
+                                firstCreatedAt.put(mealTime, meal.getCreatedAt());
+                            }
+                            mainMealGroups.get(mealTime).add(meal);
+                        }
+                        
+                        // Convert to MealGroup list and sort by first createdAt
+                        List<MealGroup> groups = new ArrayList<>();
+                        for (Map.Entry<String, List<MealResponse>> entry : mainMealGroups.entrySet()) {
+                            MealGroup group = new MealGroup(entry.getKey(), entry.getValue());
+                            group.setFirstCreatedAt(firstCreatedAt.get(entry.getKey()));
+                            groups.add(group);
+                        }
+                        
+                        // Sort groups by firstCreatedAt
+                        Collections.sort(groups, (a, b) -> {
+                            String aTime = a.getFirstCreatedAt();
+                            String bTime = b.getFirstCreatedAt();
+                            if (aTime == null) return 1;
+                            if (bTime == null) return -1;
+                            return aTime.compareTo(bTime);
+                        });
+                        
+                        // Update UI
+                        txtCurrentKcal.setText(String.format(Locale.US, "%,.0f", totalKcal));
+                        updateCalorieProgress((int) totalKcal, 2662);
+                        
+                        // Update pie chart
+                        double totalMacro = totalCarbs + totalProtein + totalFat;
+                        if (totalMacro > 0) {
+                            float carbsPercent = (float) (totalCarbs / totalMacro * 100);
+                            float proteinPercent = (float) (totalProtein / totalMacro * 100);
+                            float fatPercent = (float) (totalFat / totalMacro * 100);
+                            
+                            updatePieChart(proteinPercent, fatPercent, carbsPercent);
+                            txtCarbsLegend.setText(String.format(Locale.US, "탄수화물 (%.0f%%)", carbsPercent));
+                            txtProteinLegend.setText(String.format(Locale.US, "단백질 (%.0f%%)", proteinPercent));
+                            txtFatLegend.setText(String.format(Locale.US, "지방 (%.0f%%)", fatPercent));
+                        }
+                        
+                        // Setup RecyclerView adapter with grouped meals
+                        MealGroupAdapter adapter = new MealGroupAdapter(groups);
+                        rvMeals.setAdapter(adapter);
+                    }
+                } else {
+                    showEmptyState(true);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Map<String, Object>>> call, Throwable t) {
+                showEmptyState(true);
+            }
+        });
+    }
+
+    // MealGroup class for grouping meals by mealTime
+    private static class MealGroup {
+        private final String mealTime;
+        private final List<MealResponse> meals;
+        private String firstCreatedAt;
+        
+        MealGroup(String mealTime, List<MealResponse> meals) {
+            this.mealTime = mealTime;
+            this.meals = meals;
+        }
+        
+        String getMealTime() { return mealTime; }
+        List<MealResponse> getMeals() { return meals; }
+        String getFirstCreatedAt() { return firstCreatedAt; }
+        void setFirstCreatedAt(String firstCreatedAt) { this.firstCreatedAt = firstCreatedAt; }
+        
+        double getTotalKcal() {
+            double total = 0;
+            for (MealResponse m : meals) total += m.getKcal();
+            return total;
+        }
+        
+        double getTotalCarbs() {
+            double total = 0;
+            for (MealResponse m : meals) total += m.getCarbs();
+            return total;
+        }
+        
+        double getTotalProtein() {
+            double total = 0;
+            for (MealResponse m : meals) total += m.getProtein();
+            return total;
+        }
+        
+        double getTotalFat() {
+            double total = 0;
+            for (MealResponse m : meals) total += m.getFat();
+            return total;
+        }
+        
+        // Get unique image URLs
+        List<String> getImageUrls() {
+            List<String> urls = new ArrayList<>();
+            for (MealResponse m : meals) {
+                if (m.getImageUrl() != null && !m.getImageUrl().isEmpty() && !urls.contains(m.getImageUrl())) {
+                    urls.add(m.getImageUrl());
+                }
+            }
+            return urls;
+        }
+        
+        // Format food names like "떡볶이, 어묵 외 4개"
+        String getFormattedFoodNames() {
+            if (meals.isEmpty()) return "";
+            if (meals.size() == 1) return meals.get(0).getFoodItem();
+            if (meals.size() == 2) return meals.get(0).getFoodItem() + ", " + meals.get(1).getFoodItem();
+            
+            // 3개 이상: "첫번째, 두번째 외 N개"
+            return meals.get(0).getFoodItem() + ", " + meals.get(1).getFoodItem() + " 외 " + (meals.size() - 2) + "개";
+        }
+    }
+
+    // Adapter for grouped meals
+    private class MealGroupAdapter extends RecyclerView.Adapter<MealGroupAdapter.MealGroupViewHolder> {
+        private final List<MealGroup> groups;
+
+        MealGroupAdapter(List<MealGroup> groups) {
+            this.groups = groups;
+        }
+
+        @NonNull
+        @Override
+        public MealGroupViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_meal_group, parent, false);
+            return new MealGroupViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull MealGroupViewHolder holder, int position) {
+            MealGroup group = groups.get(position);
+            holder.bind(group);
+        }
+
+        @Override
+        public int getItemCount() {
+            return groups.size();
+        }
+
+        class MealGroupViewHolder extends RecyclerView.ViewHolder {
+            private final TextView txtMealTime;
+            private final TextView txtFoodNames;
+            private final TextView txtMealSummary;
+            private final ImageView imgMealFront;
+            private final ImageView imgMealBack;
+            private final androidx.cardview.widget.CardView cardImageBack;
+            private final FrameLayout imagesContainer;
+
+            MealGroupViewHolder(View itemView) {
+                super(itemView);
+                txtMealTime = itemView.findViewById(R.id.txt_meal_time);
+                txtFoodNames = itemView.findViewById(R.id.txt_food_names);
+                txtMealSummary = itemView.findViewById(R.id.txt_meal_summary);
+                imgMealFront = itemView.findViewById(R.id.img_meal_front);
+                imgMealBack = itemView.findViewById(R.id.img_meal_back);
+                cardImageBack = itemView.findViewById(R.id.card_image_back);
+                imagesContainer = itemView.findViewById(R.id.images_container);
+            }
+
+            void bind(MealGroup group) {
+                // Meal time label
+                String mealTimeLabel = getMealTimeLabel(group.getMealTime());
+                txtMealTime.setText(mealTimeLabel);
+                
+                // Food names (e.g., "떡볶이, 어묵 외 4개")
+                txtFoodNames.setText(group.getFormattedFoodNames());
+                
+                // Summary (total calories and macros)
+                String summary = String.format(Locale.US, "%,.0f kcal • 탄 %.0fg • 단 %.0fg • 지 %.0fg",
+                        group.getTotalKcal(), group.getTotalCarbs(), group.getTotalProtein(), group.getTotalFat());
+                txtMealSummary.setText(summary);
+                
+                // Load images
+                List<String> imageUrls = group.getImageUrls();
+                android.util.Log.d("MealGroup", "Image URLs: " + imageUrls.toString());
+                if (!imageUrls.isEmpty()) {
+                    imagesContainer.setVisibility(View.VISIBLE);
+                    android.util.Log.d("MealGroup", "Loading image: " + imageUrls.get(0));
+                    // Load front image
+                    com.bumptech.glide.Glide.with(itemView.getContext())
+                            .load(imageUrls.get(0))
+                            .centerCrop()
+                            .placeholder(R.color.gray_70)
+                            .error(R.color.gray_70)
+                            .into(imgMealFront);
+                    
+                    // Load back image if multiple images
+                    if (imageUrls.size() > 1) {
+                        cardImageBack.setVisibility(View.VISIBLE);
+                        com.bumptech.glide.Glide.with(itemView.getContext())
+                                .load(imageUrls.get(1))
+                                .centerCrop()
+                                .placeholder(R.color.gray_70)
+                                .error(R.color.gray_70)
+                                .into(imgMealBack);
+                    } else {
+                        cardImageBack.setVisibility(View.GONE);
+                    }
+                } else {
+                    // No images - show placeholder
+                    imgMealFront.setImageResource(R.color.gray_70);
+                    cardImageBack.setVisibility(View.GONE);
+                }
+                
+                // Click listener to show detail dialog
+                itemView.setOnClickListener(v -> showMealDetailDialog(group));
+            }
+            
+            private String getMealTimeLabel(String mealTime) {
+                if (mealTime == null) return "기타";
+                switch (mealTime) {
+                    case "BREAKFAST": return "아침";
+                    case "LUNCH": return "점심";
+                    case "DINNER": return "저녁";
+                    case "SNACK": return "간식";
+                    case "LATE_NIGHT": return "야식";
+                    default: return "기타";
+                }
+            }
+        }
+    }
+
+    private void showMealDetailDialog(MealGroup group) {
+        final Dialog dialog = new Dialog(getContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_meal_detail);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        // Find views
+        TextView txtMealTime = dialog.findViewById(R.id.txt_meal_time);
+        androidx.viewpager2.widget.ViewPager2 vpImages = dialog.findViewById(R.id.vp_meal_images);
+        LinearLayout indicatorContainer = dialog.findViewById(R.id.indicator_container);
+        TextView txtTotalSummary = dialog.findViewById(R.id.txt_total_summary);
+        RecyclerView rvFoodItems = dialog.findViewById(R.id.rv_food_items);
+        ImageView btnClose = dialog.findViewById(R.id.btn_close);
+
+        // Set meal time
+        String mealTimeLabel = getMealTimeLabelStatic(group.getMealTime());
+        txtMealTime.setText(mealTimeLabel);
+
+        // Load images with carousel
+        List<String> imageUrls = group.getImageUrls();
+        if (!imageUrls.isEmpty()) {
+            ImageCarouselAdapter carouselAdapter = new ImageCarouselAdapter(imageUrls);
+            vpImages.setAdapter(carouselAdapter);
+            
+            // Setup page indicator if more than 1 image
+            if (imageUrls.size() > 1) {
+                indicatorContainer.setVisibility(View.VISIBLE);
+                setupPageIndicator(indicatorContainer, imageUrls.size());
+                vpImages.registerOnPageChangeCallback(new androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback() {
+                    @Override
+                    public void onPageSelected(int position) {
+                        updatePageIndicator(indicatorContainer, position);
+                    }
+                });
+            }
+        }
+
+        // Set total summary
+        txtTotalSummary.setText(String.format(Locale.US, "총 %,.0f kcal", group.getTotalKcal()));
+
+        // Setup food items list
+        rvFoodItems.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvFoodItems.setAdapter(new FoodDetailAdapter(group.getMeals()));
+
+        // Close button
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
+    }
+
+    private static String getMealTimeLabelStatic(String mealTime) {
+        if (mealTime == null) return "기타";
+        switch (mealTime) {
+            case "BREAKFAST": return "아침";
+            case "LUNCH": return "점심";
+            case "DINNER": return "저녁";
+            case "SNACK": return "간식";
+            case "LATE_NIGHT": return "야식";
+            default: return "기타";
+        }
+    }
+
+    // Adapter for food detail list in dialog
+    private class FoodDetailAdapter extends RecyclerView.Adapter<FoodDetailAdapter.FoodDetailViewHolder> {
+        private final List<MealResponse> foods;
+
+        FoodDetailAdapter(List<MealResponse> foods) {
+            this.foods = foods;
+        }
+
+        @NonNull
+        @Override
+        public FoodDetailViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_food_detail, parent, false);
+            return new FoodDetailViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull FoodDetailViewHolder holder, int position) {
+            MealResponse food = foods.get(position);
+            holder.bind(food);
+        }
+
+        @Override
+        public int getItemCount() {
+            return foods.size();
+        }
+
+        class FoodDetailViewHolder extends RecyclerView.ViewHolder {
+            private final TextView txtFoodName;
+            private final TextView txtCalories;
+
+            FoodDetailViewHolder(View itemView) {
+                super(itemView);
+                txtFoodName = itemView.findViewById(R.id.txt_food_name);
+                txtCalories = itemView.findViewById(R.id.txt_calories);
+            }
+
+            void bind(MealResponse food) {
+                txtFoodName.setText(food.getFoodItem());
+                txtCalories.setText(String.format(Locale.US, "%.0f kcal", food.getKcal()));
+            }
+        }
+    }
+
+    // Image Carousel Adapter for ViewPager2
+    private class ImageCarouselAdapter extends RecyclerView.Adapter<ImageCarouselAdapter.ImageViewHolder> {
+        private final List<String> imageUrls;
+
+        ImageCarouselAdapter(List<String> imageUrls) {
+            this.imageUrls = imageUrls;
+        }
+
+        @NonNull
+        @Override
+        public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            ImageView imageView = new ImageView(parent.getContext());
+            imageView.setLayoutParams(new ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT));
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            return new ImageViewHolder(imageView);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
+            String url = imageUrls.get(position);
+            com.bumptech.glide.Glide.with(holder.imageView.getContext())
+                    .load(url)
+                    .centerCrop()
+                    .placeholder(R.color.gray_70)
+                    .into(holder.imageView);
+        }
+
+        @Override
+        public int getItemCount() {
+            return imageUrls.size();
+        }
+
+        class ImageViewHolder extends RecyclerView.ViewHolder {
+            ImageView imageView;
+
+            ImageViewHolder(ImageView itemView) {
+                super(itemView);
+                this.imageView = itemView;
+            }
+        }
+    }
+
+    private void setupPageIndicator(LinearLayout container, int count) {
+        container.removeAllViews();
+        for (int i = 0; i < count; i++) {
+            View dot = new View(getContext());
+            int size = (int) (8 * getResources().getDisplayMetrics().density);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
+            params.setMargins(4, 0, 4, 0);
+            dot.setLayoutParams(params);
+            dot.setBackgroundResource(R.drawable.indicator_dot);
+            dot.setSelected(i == 0);
+            container.addView(dot);
+        }
+    }
+
+    private void updatePageIndicator(LinearLayout container, int position) {
+        for (int i = 0; i < container.getChildCount(); i++) {
+            container.getChildAt(i).setSelected(i == position);
+        }
     }
 }
