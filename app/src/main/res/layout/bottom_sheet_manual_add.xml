@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_bottom_sheet_rounded"
+    android:padding="@dimen/spacing_lg">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="@dimen/spacing_lg">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="식단 수동 추가"
+            android:textColor="@color/gray_text"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/btn_close"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:padding="4dp"
+            android:src="@drawable/ic_close"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/gray_subtext"
+            android:contentDescription="닫기" />
+    </LinearLayout>
+
+    <!-- 음식 이름 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="음식 이름"
+        android:textColor="@color/gray_text"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="@dimen/spacing_sm" />
+
+    <EditText
+        android:id="@+id/et_food_name"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="@drawable/bg_edit_text_rounded"
+        android:paddingHorizontal="@dimen/spacing_md"
+        android:hint="예: 닭가슴살 샐러드"
+        android:textColorHint="@color/gray_50"
+        android:textColor="@color/gray_text"
+        android:textSize="15sp"
+        android:inputType="text"
+        android:maxLines="1"
+        android:imeOptions="actionDone"
+        android:layout_marginBottom="@dimen/spacing_lg" />
+
+    <!-- 식사 시간 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="식사 시간"
+        android:textColor="@color/gray_text"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="@dimen/spacing_sm" />
+
+    <Spinner
+        android:id="@+id/spinner_meal_time"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="@drawable/bg_spinner_rounded"
+        android:paddingHorizontal="@dimen/spacing_md"
+        android:spinnerMode="dropdown"
+        android:layout_marginBottom="@dimen/spacing_xl" />
+
+    <!-- 추가 버튼 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_add_to_record"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:text="＋ 기록에 추가하기"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:backgroundTint="@color/primary_blue"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_add"
+        app:iconGravity="textStart"
+        app:iconTint="@color/white"
+        android:layout_marginBottom="@dimen/spacing_md" />
+
+</LinearLayout>

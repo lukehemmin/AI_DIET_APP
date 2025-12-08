@@ -300,8 +300,8 @@ public class HomeFragment extends Fragment {
     }
 
     private void openHealthReport() {
-        Intent intent = new Intent(getContext(), com.lukehemmin.ai_diet_app.HealthReportActivity.class);
-        startActivity(intent);
+        HealthReportBottomSheet bottomSheet = HealthReportBottomSheet.newInstance();
+        bottomSheet.show(getChildFragmentManager(), "HealthReportBottomSheet");
     }
 
     private void openCamera() {
@@ -884,7 +884,12 @@ public class HomeFragment extends Fragment {
     }
 
     private void openManualAddModal() {
-        // TODO: Implement manual add modal
+        ManualAddBottomSheet bottomSheet = ManualAddBottomSheet.newInstance(currentSelectedDate);
+        bottomSheet.setOnMealAddedListener(() -> {
+            // 식단 추가 후 목록 새로고침
+            loadMealsForDate(currentSelectedDate);
+        });
+        bottomSheet.show(getChildFragmentManager(), "ManualAddBottomSheet");
     }
 
     private void navigateDate(int delta) {
