@@ -9,25 +9,58 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="@dimen/spacing_xxl"
-        android:background="@color/gray_90">
+        android:background="@color/gray_90"
+        android:gravity="center_vertical">
         
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/chat_title"
-            android:textSize="@dimen/text_xxl"
-            android:textStyle="bold"
-            android:textColor="@color/gray_text"/>
+            android:layout_weight="1"
+            android:orientation="vertical">
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/chat_title"
+                android:textSize="@dimen/text_xxl"
+                android:textStyle="bold"
+                android:textColor="@color/gray_text"/>
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/chat_subtitle"
+                android:textSize="@dimen/text_base"
+                android:textColor="@color/gray_subtext"
+                android:layout_marginTop="@dimen/spacing_xs"/>
+        </LinearLayout>
         
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/chat_subtitle"
-            android:textSize="@dimen/text_base"
-            android:textColor="@color/gray_subtext"
-            android:layout_marginTop="@dimen/spacing_xs"/>
+        <!-- 새 대화 버튼 -->
+        <ImageView
+            android:id="@+id/btn_new_chat"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_add"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="새 대화"
+            android:layout_marginEnd="8dp"/>
+        
+        <!-- 메뉴 버튼 -->
+        <ImageView
+            android:id="@+id/btn_chat_menu"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_more_vert"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="메뉴"/>
     </LinearLayout>
     
     <!-- Chat Messages -->

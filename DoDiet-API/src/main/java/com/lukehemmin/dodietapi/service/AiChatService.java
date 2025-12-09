@@ -128,6 +128,7 @@ public class AiChatService {
         JsonNode candidates = root.path("candidates");
         
         if (!candidates.isArray() || candidates.isEmpty()) {
+            log.warn("Gemini response has no candidates");
             return "응답을 생성할 수 없습니다.";
         }
 
@@ -135,25 +136,44 @@ public class AiChatService {
         JsonNode parts = content.path("parts");
 
         if (!parts.isArray() || parts.isEmpty()) {
+            log.warn("Gemini response has no parts");
             return "응답을 생성할 수 없습니다.";
         }
 
-        // Function Call 확인
-        JsonNode firstPart = parts.get(0);
-        if (firstPart.has("functionCall")) {
-            JsonNode functionCall = firstPart.path("functionCall");
-            String functionName = functionCall.path("name").asText();
-            JsonNode args = functionCall.path("args");
+        // 모든 parts를 검사하여 functionCall 찾기
+        // Gemini는 텍스트와 functionCall을 동시에 반환할 수 있음
+        JsonNode functionCallPart = null;
+        StringBuilder textResponse = new StringBuilder();
+        
+        for (JsonNode part : parts) {
+            if (part.has("functionCall")) {
+                functionCallPart = part.path("functionCall");
+                log.info("Found functionCall in parts: {}", functionCallPart.path("name").asText());
+            } else if (part.has("text")) {
+                String text = part.path("text").asText("");
+                if (!text.isEmpty()) {
+                    textResponse.append(text);
+                }
+            }
+        }
+
+        // Function Call이 있으면 실행
+        if (functionCallPart != null) {
+            String functionName = functionCallPart.path("name").asText();
+            JsonNode args = functionCallPart.path("args");
+
+            log.info("Executing function call: {} with args: {}", functionName, args);
 
             // Function 실행
             String functionResult = executeFunctionCall(user, functionName, args);
 
-            // Function 결과로 다시 API 호출
+            // Function 결과로 다시 API 호출하여 최종 응답 생성
             return callGeminiWithFunctionResult(user, originalMessage, functionName, functionResult, memoryContext);
         }
 
-        // 일반 텍스트 응답
-        return firstPart.path("text").asText("응답을 생성할 수 없습니다.");
+        // Function Call이 없으면 텍스트 응답 반환
+        String finalText = textResponse.toString().trim();
+        return finalText.isEmpty() ? "응답을 생성할 수 없습니다." : finalText;
     }
 
     private String executeFunctionCall(User user, String functionName, JsonNode args) {
@@ -163,9 +183,10 @@ public class AiChatService {
             case "get_user_profile":
                 return getUserProfile(user);
             case "get_meal_history":
+                int startDaysAgo = args.path("start_days_ago").asInt(0);
                 int days = args.path("days").asInt(7);
                 String mealType = args.path("meal_type").asText(null);
-                return getMealHistory(user, days, mealType);
+                return getMealHistory(user, startDaysAgo, days, mealType);
             case "save_memory":
                 String category = args.path("category").asText("GENERAL");
                 String title = args.path("title").asText();
@@ -270,14 +291,19 @@ public class AiChatService {
     private ObjectNode createGetMealHistoryFunction() {
         ObjectNode func = objectMapper.createObjectNode();
         func.put("name", "get_meal_history");
-        func.put("description", "사용자의 식사 기록을 가져옵니다. 특정 기간(1-90일)의 식사 내역을 조회할 수 있습니다.");
+        func.put("description", "사용자의 식사 기록을 가져옵니다. 특정 날짜 또는 기간의 식사 내역을 조회할 수 있습니다.");
         ObjectNode params = objectMapper.createObjectNode();
         params.put("type", "object");
         ObjectNode properties = objectMapper.createObjectNode();
         
+        ObjectNode startDaysAgoParam = objectMapper.createObjectNode();
+        startDaysAgoParam.put("type", "integer");
+        startDaysAgoParam.put("description", "조회 시작일 (며칠 전부터). 0=오늘, 1=어제, 2=그제. 기본값: 0");
+        properties.set("start_days_ago", startDaysAgoParam);
+        
         ObjectNode daysParam = objectMapper.createObjectNode();
         daysParam.put("type", "integer");
-        daysParam.put("description", "조회할 일수 (1-90, 기본값: 7)");
+        daysParam.put("description", "조회할 일수 (1-90). 기본값: 7. 어제만 조회하려면 start_days_ago=1, days=1");
         properties.set("days", daysParam);
 
         ObjectNode mealTypeParam = objectMapper.createObjectNode();
@@ -362,9 +388,16 @@ public class AiChatService {
         return sb.toString();
     }
 
-    private String getMealHistory(User user, int days, String mealType) {
-        LocalDate endDate = LocalDate.now();
+    private String getMealHistory(User user, int startDaysAgo, int days, String mealType) {
+        // startDaysAgo: 0=오늘부터, 1=어제부터, 2=그제부터
+        // days: 조회할 일수
+        // 예: "어제 뭐 먹었어?" → startDaysAgo=1, days=1 → 어제 하루만 조회
+        // 예: "이번 주 뭐 먹었어?" → startDaysAgo=0, days=7 → 오늘부터 7일간 조회
+        LocalDate endDate = LocalDate.now().minusDays(startDaysAgo);
         LocalDate startDate = endDate.minusDays(days - 1);
+        
+        log.info("getMealHistory: startDaysAgo={}, days={}, startDate={}, endDate={}", 
+                 startDaysAgo, days, startDate, endDate);
         
         List<Meal> meals = mealRepository.findByUserAndDateBetweenOrderByDateDesc(user, startDate, endDate);
         
@@ -374,12 +407,24 @@ public class AiChatService {
                     .collect(Collectors.toList());
         }
 
+        // 날짜 설명 생성
+        String dateDescription;
+        if (startDaysAgo == 0 && days == 1) {
+            dateDescription = "오늘";
+        } else if (startDaysAgo == 1 && days == 1) {
+            dateDescription = "어제";
+        } else if (startDaysAgo == 0) {
+            dateDescription = "최근 " + days + "일";
+        } else {
+            dateDescription = startDaysAgo + "일 전부터 " + days + "일간";
+        }
+
         if (meals.isEmpty()) {
-            return "최근 " + days + "일간 식사 기록이 없습니다.";
+            return dateDescription + " 식사 기록이 없습니다.";
         }
 
         StringBuilder sb = new StringBuilder();
-        sb.append("최근 ").append(days).append("일간 식사 기록 (").append(meals.size()).append("건):\n\n");
+        sb.append(dateDescription).append(" 식사 기록 (").append(meals.size()).append("건):\n\n");
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("M/d");
         Map<LocalDate, List<Meal>> mealsByDate = meals.stream()
@@ -449,15 +494,28 @@ public class AiChatService {
     }
 
     private String buildSystemPrompt(String memoryContext) {
+        // 현재 날짜/시간 정보 (서버 기준, 한국 시간)
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        java.time.format.DateTimeFormatter dateFormatter = java.time.format.DateTimeFormatter.ofPattern("yyyy년 M월 d일 (E)", java.util.Locale.KOREAN);
+        java.time.format.DateTimeFormatter timeFormatter = java.time.format.DateTimeFormatter.ofPattern("a h시 m분", java.util.Locale.KOREAN);
+        String currentDate = now.format(dateFormatter);
+        String currentTime = now.format(timeFormatter);
+        String dayOfWeek = now.getDayOfWeek().getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.KOREAN);
+        
         return """
             당신은 친절하고 전문적인 AI 영양사/다이어트 코치입니다.
+            
+            **현재 시간 정보 (서버 기준):**
+            - 오늘 날짜: """ + currentDate + """
+            - 현재 시간: """ + currentTime + """
+            - 요일: """ + dayOfWeek + """
             
             **역할:**
             - 사용자의 식단, 영양, 건강, 운동에 대한 질문에 답변합니다.
             - 사용자의 정보와 식사 기록을 바탕으로 맞춤형 조언을 제공합니다.
             - 중요한 정보는 기억해서 다음 대화에 활용합니다.
             
-            **도구 사용 가이드:**
+            **도구 사용 가이드:
             - get_user_profile: 사용자의 기본 정보(키, 몸무게, 나이 등)가 필요할 때
             - get_meal_history: 사용자의 식사 기록을 확인해야 할 때 (어제/오늘/이번 주 뭐 먹었는지 등)
             - save_memory: 사용자에 대한 중요한 정보(알레르기, 선호도, 목표 등)를 기억해야 할 때
@@ -466,11 +524,21 @@ public class AiChatService {
             **기억하고 있는 정보:**
             """ + memoryContext + """
             
+            **[중요] 도구 사용 시 규칙:**
+            - 도구가 필요한 질문에는 텍스트 응답 없이 바로 도구를 호출하세요!
+            - "확인해볼게요", "조회해볼게요" 같은 중간 텍스트를 출력하지 마세요.
+            - 도구 결과를 받은 후에만 완전한 답변을 작성하세요.
+            - 잘못된 예: "네, 어제 드신 식사를 확인해볼게요" (텍스트) + get_meal_history (도구)
+            - 올바른 예: get_meal_history만 호출 → 결과 받은 후 분석 답변 제공
+            
             **응답 가이드:**
             - 한국어로 친근하게 답변하세요.
             - 마크다운 형식을 사용해서 읽기 쉽게 작성하세요.
             - 구체적이고 실용적인 조언을 제공하세요.
-            - 필요하면 도구를 사용해서 정확한 정보를 가져오세요.
+            
+            **자연스러운 대화:**
+            - 도구 이름(get_meal_history 등)을 직접 언급하지 마세요.
+            - 도구 결과를 바탕으로 자연스럽게 분석 결과와 조언을 제공하세요.
             """;
     }
 }
