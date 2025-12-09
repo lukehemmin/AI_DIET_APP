@@ -1,11 +1,20 @@
 package com.lukehemmin.ai_diet_app.fragments;
 
-import android.app.AlertDialog;
+import android.app.Dialog;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.lukehemmin.ai_diet_app.R;
 import com.lukehemmin.ai_diet_app.adapters.FriendAdapter;
+import com.lukehemmin.ai_diet_app.ble.NearbyFriendService;
 import com.lukehemmin.ai_diet_app.data.model.ApiResponse;
 import com.lukehemmin.ai_diet_app.data.model.FriendRequest;
 import com.lukehemmin.ai_diet_app.data.model.FriendResponse;
@@ -37,11 +47,13 @@ public class ProfileFriendsFragment extends Fragment {
     private RecyclerView rvFriendRequests;
     private TextView tvRequestsHeader;
     private TextView txtEmptyFriends;
-    private TextView btnAddFriend;
+    private View btnAddFriend;
 
     private FriendAdapter friendAdapter;
     private FriendAdapter requestAdapter;
     private ApiService apiService;
+    private NearbyFriendService nearbyFriendService;
+    private Dialog currentDialog;
 
     @Nullable
     @Override
@@ -50,12 +62,24 @@ public class ProfileFriendsFragment extends Fragment {
 
         // Fix: Pass context to getClient()
         apiService = RetrofitClient.getClient(getContext()).create(ApiService.class);
+        
+        // Initialize BLE service
+        nearbyFriendService = new NearbyFriendService(requireContext());
 
         initializeViews(view);
         setupAdapters();
         loadData();
 
         return view;
+    }
+    
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Stop BLE discovery when leaving
+        if (nearbyFriendService != null && nearbyFriendService.isDiscovering()) {
+            nearbyFriendService.stopDiscovery();
+        }
     }
 
     private void initializeViews(View view) {
@@ -164,22 +188,146 @@ public class ProfileFriendsFragment extends Fragment {
     }
 
     private void showAddFriendDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("친구 추가");
+        Dialog dialog = new Dialog(requireContext());
+        currentDialog = dialog;
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_add_friend);
+        
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            dialog.getWindow().setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+        }
 
-        final EditText input = new EditText(getContext());
-        input.setHint("친구 이메일 입력");
-        builder.setView(input);
+        // Close button
+        ImageView btnClose = dialog.findViewById(R.id.btn_close);
+        TextView tvScanningStatus = dialog.findViewById(R.id.tv_scanning_status);
+        
+        btnClose.setOnClickListener(v -> {
+            nearbyFriendService.stopDiscovery();
+            dialog.dismiss();
+        });
 
-        builder.setPositiveButton("요청 보내기", (dialog, which) -> {
-            String email = input.getText().toString();
-            if (!email.isEmpty()) {
-                sendFriendRequest(email);
+        // Start radar animations
+        View ring1 = dialog.findViewById(R.id.radar_ring_1);
+        View ring2 = dialog.findViewById(R.id.radar_ring_2);
+        View ring3 = dialog.findViewById(R.id.radar_ring_3);
+
+        Animation pulse1 = AnimationUtils.loadAnimation(getContext(), R.anim.radar_pulse);
+        Animation pulse2 = AnimationUtils.loadAnimation(getContext(), R.anim.radar_pulse_delayed);
+        Animation pulse3 = AnimationUtils.loadAnimation(getContext(), R.anim.radar_pulse_delayed2);
+
+        ring1.startAnimation(pulse1);
+        ring2.startAnimation(pulse2);
+        ring3.startAnimation(pulse3);
+        
+        // Setup BLE callback
+        nearbyFriendService.setCallback(new NearbyFriendService.NearbyFriendCallback() {
+            @Override
+            public void onFriendFound(NearbyFriendService.NearbyFriend friend) {
+                // 주변에서 친구 발견!
+                tvScanningStatus.setText("주변에서 " + friend.name + "님을 발견했습니다!");
+                // TODO: 발견된 친구 목록에 추가하고 클릭 시 친구 요청 보내기
+            }
+            
+            @Override
+            public void onScanStarted() {
+                tvScanningStatus.setText("주변에서 친구를 찾고 있습니다...");
+            }
+            
+            @Override
+            public void onScanStopped() {
+                tvScanningStatus.setText("검색이 완료되었습니다.");
+            }
+            
+            @Override
+            public void onError(String message) {
+                tvScanningStatus.setText(message);
             }
         });
-        builder.setNegativeButton("취소", (dialog, which) -> dialog.cancel());
+        
+        // Start BLE discovery
+        if (nearbyFriendService.isBluetoothSupported() && nearbyFriendService.hasRequiredPermissions()) {
+            nearbyFriendService.startDiscovery();
+        } else if (!nearbyFriendService.isBluetoothSupported()) {
+            tvScanningStatus.setText("블루투스를 지원하지 않는 기기입니다.\n아래 버튼으로 친구를 추가해주세요.");
+        } else {
+            tvScanningStatus.setText("블루투스 권한이 필요합니다.\n아래 버튼으로 친구를 추가해주세요.");
+        }
 
-        builder.show();
+        // Email search button
+        LinearLayout btnEmailSearch = dialog.findViewById(R.id.btn_email_search);
+        btnEmailSearch.setOnClickListener(v -> {
+            nearbyFriendService.stopDiscovery();
+            dialog.dismiss();
+            showEmailSearchDialog();
+        });
+        
+        // Stop discovery when dialog is dismissed
+        dialog.setOnDismissListener(d -> {
+            nearbyFriendService.stopDiscovery();
+            currentDialog = null;
+        });
+
+        dialog.show();
+    }
+
+    private void showEmailSearchDialog() {
+        Dialog dialog = new Dialog(requireContext());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.dialog_email_friend_search);
+        
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            dialog.getWindow().setLayout(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+        }
+
+        // Close button
+        ImageView btnClose = dialog.findViewById(R.id.btn_close);
+        btnClose.setOnClickListener(v -> dialog.dismiss());
+
+        EditText etSearch = dialog.findViewById(R.id.et_search);
+        TextView tvEmptyState = dialog.findViewById(R.id.tv_empty_state);
+        RecyclerView rvSearchResults = dialog.findViewById(R.id.rv_search_results);
+        View progressBar = dialog.findViewById(R.id.progress_bar);
+
+        // Setup search functionality
+        etSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String query = s.toString().trim();
+                if (query.length() >= 3) {
+                    // TODO: Implement search API
+                    tvEmptyState.setText("'" + query + "'(으)로 친구 요청을 보내려면\n검색 버튼을 누르세요.");
+                } else {
+                    tvEmptyState.setText("검색어를 입력해주세요.");
+                }
+            }
+        });
+
+        // Handle search/send action
+        etSearch.setOnEditorActionListener((v, actionId, event) -> {
+            String email = etSearch.getText().toString().trim();
+            if (!email.isEmpty()) {
+                sendFriendRequest(email);
+                dialog.dismiss();
+                return true;
+            }
+            return false;
+        });
+
+        dialog.show();
     }
 
     private void sendFriendRequest(String email) {

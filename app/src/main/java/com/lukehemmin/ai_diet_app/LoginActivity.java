@@ -129,8 +129,8 @@ public class LoginActivity extends AppCompatActivity {
     }
     
     /**
-     * 저장된 토큰이 있으면 자동 로그인
-     * @return true if auto login successful
+     * 저장된 토큰이 있으면 서버에 검증 후 자동 로그인
+     * @return true if attempting auto login (async verification)
      */
     private boolean checkAutoLogin() {
         android.content.SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
@@ -138,13 +138,69 @@ public class LoginActivity extends AppCompatActivity {
         String token = prefs.getString("auth_token", null);
         
         if (isLoggedIn && token != null && !token.isEmpty()) {
-            // 토큰이 있으면 바로 MainActivity로 이동
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
+            // 서버에 토큰 유효성 검증
+            verifyTokenAndProceed();
             return true;
         }
         return false;
+    }
+    
+    /**
+     * 서버에 토큰 검증 요청
+     */
+    private void verifyTokenAndProceed() {
+        // 로딩 화면 표시 (간단히 처리)
+        setContentView(R.layout.activity_splash_loading);
+        
+        com.lukehemmin.ai_diet_app.network.ApiService apiService = 
+                com.lukehemmin.ai_diet_app.network.RetrofitClient.getClient(this).create(
+                        com.lukehemmin.ai_diet_app.network.ApiService.class);
+        
+        // 프로필 API로 토큰 유효성 검증
+        apiService.getProfile().enqueue(new retrofit2.Callback<com.lukehemmin.ai_diet_app.data.model.ApiResponse<com.lukehemmin.ai_diet_app.data.model.UserProfile>>() {
+            @Override
+            public void onResponse(retrofit2.Call<com.lukehemmin.ai_diet_app.data.model.ApiResponse<com.lukehemmin.ai_diet_app.data.model.UserProfile>> call, 
+                                   retrofit2.Response<com.lukehemmin.ai_diet_app.data.model.ApiResponse<com.lukehemmin.ai_diet_app.data.model.UserProfile>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    // 토큰 유효 - 홈으로 이동
+                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else if (response.code() == 401 || response.code() == 403) {
+                    // 토큰 만료 또는 인증 실패 - 로그인 화면 표시
+                    clearTokenAndShowLogin("세션이 만료되었습니다. 다시 로그인해주세요.");
+                } else {
+                    // 기타 오류 - 로그인 화면 표시 (안전하게 처리)
+                    clearTokenAndShowLogin("인증에 실패했습니다. 다시 로그인해주세요.");
+                }
+            }
+
+            @Override
+            public void onFailure(retrofit2.Call<com.lukehemmin.ai_diet_app.data.model.ApiResponse<com.lukehemmin.ai_diet_app.data.model.UserProfile>> call, Throwable t) {
+                android.util.Log.e("LoginActivity", "Token verification failed", t);
+                // 네트워크 오류 - 서버 연결 불가
+                clearTokenAndShowLogin("서버에 연결할 수 없습니다. 다시 로그인해주세요.");
+            }
+        });
+    }
+    
+    /**
+     * 토큰 삭제 및 로그인 화면 재시작
+     */
+    private void clearTokenAndShowLogin(String message) {
+        android.content.SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+        prefs.edit()
+            .putBoolean("is_logged_in", false)
+            .remove("auth_token")
+            .apply();
+        
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        
+        // Activity 재시작 (registerForActivityResult는 onCreate에서만 가능)
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void initViews() {

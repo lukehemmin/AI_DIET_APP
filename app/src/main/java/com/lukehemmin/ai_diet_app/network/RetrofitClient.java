@@ -2,15 +2,23 @@ package com.lukehemmin.ai_diet_app.network;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+
+import com.lukehemmin.ai_diet_app.utils.AuthManager;
+
 import okhttp3.Request;
+import okhttp3.Response;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class RetrofitClient {
 
+    private static final String TAG = "RetrofitClient";
+    
     // Android Emulator uses 10.0.2.2 to access localhost of the host machine
     // For physical device, use your machine's local IP address (e.g., 192.168.0.x)
     private static final String BASE_URL = "http://192.168.0.27:8080/";
@@ -19,8 +27,6 @@ public class RetrofitClient {
     public static ApiService getApiService() {
         if (retrofit == null) {
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-            // BODY level logs binary data for file uploads which causes performance issues/crashes.
-            // Using HEADERS to see status codes, or BASIC for minimal info.
             logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
 
             OkHttpClient client = new OkHttpClient.Builder()
@@ -41,7 +47,6 @@ public class RetrofitClient {
 
     public static Retrofit getClient(Context context) {
         HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
-        // BODY level logs binary data for file uploads which causes performance issues/crashes.
         logging.setLevel(HttpLoggingInterceptor.Level.HEADERS);
 
         OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
@@ -51,6 +56,7 @@ public class RetrofitClient {
                 .writeTimeout(60, TimeUnit.SECONDS);
 
         if (context != null) {
+            // 토큰 추가 인터셉터
             clientBuilder.addInterceptor(chain -> {
                 SharedPreferences prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
                 String token = prefs.getString("auth_token", null);
@@ -60,6 +66,27 @@ public class RetrofitClient {
                     requestBuilder.addHeader("Authorization", "Bearer " + token);
                 }
                 return chain.proceed(requestBuilder.build());
+            });
+            
+            // 401 응답 처리 인터셉터
+            clientBuilder.addInterceptor(chain -> {
+                Request request = chain.request();
+                Response response;
+                
+                try {
+                    response = chain.proceed(request);
+                } catch (IOException e) {
+                    Log.e(TAG, "Network error: " + e.getMessage());
+                    throw e;
+                }
+                
+                // 401 Unauthorized 또는 403 Forbidden - 토큰 만료 또는 유효하지 않음
+                if (response.code() == 401 || response.code() == 403) {
+                    Log.w(TAG, response.code() + " - Token expired or invalid");
+                    AuthManager.forceLogout(context, "세션이 만료되었습니다. 다시 로그인해주세요.");
+                }
+                
+                return response;
             });
         }
 

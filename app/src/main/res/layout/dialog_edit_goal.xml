@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_xl"
+    android:background="@color/white">
+
+    <!-- Header -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="목표 칼로리 수정"
+        android:textSize="@dimen/text_xl"
+        android:textStyle="bold"
+        android:textColor="@color/gray_text"
+        android:layout_marginBottom="@dimen/spacing_lg" />
+
+    <!-- Goal Intake Input -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="일일 목표 섭취량"
+        android:textColor="@color/gray_subtext"
+        android:textSize="@dimen/text_sm"
+        android:layout_marginBottom="@dimen/spacing_xs" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="@dimen/spacing_md">
+
+        <EditText
+            android:id="@+id/etGoalIntake"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:inputType="number"
+            android:hint="예: 2000"
+            android:textColor="@color/gray_text"
+            android:textColorHint="@color/gray_subtext"
+            android:background="@drawable/bg_edit_text_rounded"
+            android:paddingHorizontal="@dimen/spacing_md" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" kcal"
+            android:textColor="@color/gray_text"
+            android:textSize="@dimen/text_md"
+            android:layout_marginStart="@dimen/spacing_sm" />
+    </LinearLayout>
+
+    <!-- AI Recommend Button -->
+    <Button
+        android:id="@+id/btnAiRecommend"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="🤖 AI 추천 칼로리 적용"
+        android:textColor="@color/primary_blue"
+        android:backgroundTint="@color/primary_light"
+        android:layout_marginBottom="@dimen/spacing_lg"
+        style="@style/Widget.MaterialComponents.Button.TextButton" />
+
+    <!-- Info Text -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="💡 AI 채팅에서도 목표 칼로리를 조정할 수 있어요.\n다이어트, 벌크업 등 목표에 맞게 AI에게 상담해보세요."
+        android:textColor="@color/gray_subtext"
+        android:textSize="@dimen/text_sm"
+        android:lineSpacingExtra="4dp"
+        android:layout_marginBottom="@dimen/spacing_xl" />
+
+    <!-- Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/spacing_sm"
+            android:text="취소"
+            android:textColor="@color/gray_subtext"
+            android:backgroundTint="@color/gray_70"
+            style="@style/Widget.MaterialComponents.Button" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:text="저장"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/primary_blue"
+            style="@style/Widget.MaterialComponents.Button" />
+    </LinearLayout>
+
+</LinearLayout>

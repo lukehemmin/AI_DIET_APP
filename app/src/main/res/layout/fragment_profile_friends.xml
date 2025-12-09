@@ -23,18 +23,32 @@
             android:textStyle="bold"
             android:textColor="@color/gray_text"/>
         
-        <TextView
+        <LinearLayout
             android:id="@+id/btn_add_friend"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="+ 친구 추가"
-            android:textSize="@dimen/text_sm"
-            android:textStyle="bold"
-            android:textColor="@color/primary_blue"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:clickable="true"
             android:focusable="true"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="8dp"/>
+            android:padding="8dp">
+            
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_person_white"
+                android:layout_marginEnd="4dp"
+                app:tint="@color/primary_blue" />
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="친구 추가"
+                android:textSize="@dimen/text_sm"
+                android:textStyle="bold"
+                android:textColor="@color/primary_blue" />
+        </LinearLayout>
     </LinearLayout>
     
     <!-- Friends List -->
@@ -69,16 +83,7 @@
                 android:layout_marginBottom="@dimen/spacing_lg"
                 android:visibility="gone"/>
             
-            <!-- Friends Section -->
-            <TextView
-                android:id="@+id/tv_friends_header"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="친구 목록"
-                android:textSize="@dimen/text_lg"
-                android:textStyle="bold"
-                android:textColor="@color/gray_text"
-                android:layout_marginBottom="@dimen/spacing_sm"/>
+            <!-- Friends Section - 헤더와 중복되므로 제거 -->
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_friends"

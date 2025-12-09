@@ -77,4 +77,35 @@ public class JwtTokenProvider {
         }
         return false;
     }
+    
+    /**
+     * 토큰 검증 결과를 세부적으로 반환
+     */
+    public TokenValidationResult validateTokenWithResult(String authToken) {
+        try {
+            Jwts.parser().verifyWith(key).build().parseSignedClaims(authToken);
+            return TokenValidationResult.VALID;
+        } catch (ExpiredJwtException ex) {
+            log.error("Expired JWT token");
+            return TokenValidationResult.EXPIRED;
+        } catch (MalformedJwtException ex) {
+            log.error("Invalid JWT token");
+            return TokenValidationResult.INVALID;
+        } catch (UnsupportedJwtException ex) {
+            log.error("Unsupported JWT token");
+            return TokenValidationResult.INVALID;
+        } catch (IllegalArgumentException ex) {
+            log.error("JWT claims string is empty");
+            return TokenValidationResult.INVALID;
+        }
+    }
+    
+    /**
+     * 토큰 검증 결과 enum
+     */
+    public enum TokenValidationResult {
+        VALID,      // 유효한 토큰
+        EXPIRED,    // 만료된 토큰
+        INVALID     // 유효하지 않은 토큰
+    }
 }

@@ -32,7 +32,7 @@ import retrofit2.Response;
 public class ProfileInfoFragment extends Fragment {
 
     private TextView tvGender, tvAge, tvHeight, tvWeight, tvActivityLevel, tvBmr, tvGoalIntake;
-    private ImageView btnEditProfile;
+    private ImageView btnEditProfile, btnEditGoal;
     private UserProfile currentUserProfile;
 
     @Nullable
@@ -59,14 +59,16 @@ public class ProfileInfoFragment extends Fragment {
         tvBmr = view.findViewById(R.id.tvBmr);
         tvGoalIntake = view.findViewById(R.id.tvGoalIntake);
         btnEditProfile = view.findViewById(R.id.btnEditProfile);
+        btnEditGoal = view.findViewById(R.id.btnEditGoal);
     }
 
     private void setupListeners() {
         btnEditProfile.setOnClickListener(v -> showEditDialog());
+        btnEditGoal.setOnClickListener(v -> showGoalEditDialog());
     }
 
     private void fetchProfile() {
-        ApiService apiService = RetrofitClient.getApiService();
+        ApiService apiService = RetrofitClient.getClient(getContext()).create(ApiService.class);
         apiService.getProfile().enqueue(new Callback<ApiResponse<UserProfile>>() {
             @Override
             public void onResponse(Call<ApiResponse<UserProfile>> call, Response<ApiResponse<UserProfile>> response) {
@@ -176,7 +178,7 @@ public class ProfileInfoFragment extends Fragment {
     }
 
     private void updateProfile(UserProfile updatedProfile, AlertDialog dialog) {
-        ApiService apiService = RetrofitClient.getApiService();
+        ApiService apiService = RetrofitClient.getClient(getContext()).create(ApiService.class);
         apiService.updateProfile(updatedProfile).enqueue(new Callback<ApiResponse<UserProfile>>() {
             @Override
             public void onResponse(Call<ApiResponse<UserProfile>> call, Response<ApiResponse<UserProfile>> response) {
@@ -195,5 +197,81 @@ public class ProfileInfoFragment extends Fragment {
                 Toast.makeText(getContext(), "네트워크 오류: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void showGoalEditDialog() {
+        if (currentUserProfile == null) {
+            Toast.makeText(getContext(), "프로필 정보를 불러오는 중입니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_edit_goal, null);
+
+        EditText etGoalIntake = dialogView.findViewById(R.id.etGoalIntake);
+        Button btnSave = dialogView.findViewById(R.id.btnSave);
+        Button btnCancel = dialogView.findViewById(R.id.btnCancel);
+        Button btnAiRecommend = dialogView.findViewById(R.id.btnAiRecommend);
+
+        // Pre-fill current goal
+        if (currentUserProfile.getGoalIntake() != null) {
+            etGoalIntake.setText(String.valueOf(currentUserProfile.getGoalIntake().intValue()));
+        }
+
+        AlertDialog dialog = builder.setView(dialogView).create();
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.white);
+        }
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        
+        btnAiRecommend.setOnClickListener(v -> {
+            // BMR 기준 권장 칼로리 계산 (체중 유지 기준)
+            if (currentUserProfile.getBmr() != null) {
+                double bmr = currentUserProfile.getBmr();
+                double recommendedIntake = bmr * 1.2; // 기초 활동량 기준
+                
+                // 활동량에 따라 조정
+                String activityLevel = currentUserProfile.getActivityLevel();
+                if ("MODERATELY_ACTIVE".equals(activityLevel)) {
+                    recommendedIntake = bmr * 1.55;
+                } else if ("VERY_ACTIVE".equals(activityLevel)) {
+                    recommendedIntake = bmr * 1.725;
+                } else if ("LIGHTLY_ACTIVE".equals(activityLevel)) {
+                    recommendedIntake = bmr * 1.375;
+                }
+                
+                etGoalIntake.setText(String.valueOf((int) recommendedIntake));
+                Toast.makeText(getContext(), "AI 권장 칼로리가 적용되었습니다.", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "BMR 정보가 없습니다. 기본 정보를 먼저 입력해주세요.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        btnSave.setOnClickListener(v -> {
+            try {
+                int goalIntake = Integer.parseInt(etGoalIntake.getText().toString());
+                
+                UserProfile updatedProfile = new UserProfile(
+                        currentUserProfile.getName(),
+                        currentUserProfile.getEmail(),
+                        currentUserProfile.getGender(),
+                        currentUserProfile.getAge(),
+                        currentUserProfile.getHeight(),
+                        currentUserProfile.getWeight(),
+                        currentUserProfile.getActivityLevel(),
+                        currentUserProfile.getBmr(),
+                        (double) goalIntake
+                );
+
+                updateProfile(updatedProfile, dialog);
+
+            } catch (NumberFormatException e) {
+                Toast.makeText(getContext(), "올바른 숫자를 입력해주세요.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        dialog.show();
     }
 }

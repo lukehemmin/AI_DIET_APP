@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="6dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/corner_radius_lg"
+    app:cardElevation="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_lg">
+
+        <!-- Badge Icon Container -->
+        <FrameLayout
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/bg_gray_rounded">
+
+            <ImageView
+                android:id="@+id/iv_badge_icon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_badge_first_step" />
+        </FrameLayout>
+
+        <!-- Badge Name -->
+        <TextView
+            android:id="@+id/tv_badge_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:gravity="center"
+            android:maxLines="2"
+            android:text="첫 걸음"
+            android:textColor="@color/gray_text"
+            android:textSize="@dimen/text_sm"
+            android:textStyle="bold" />
+
+        <!-- Badge Description -->
+        <TextView
+            android:id="@+id/tv_badge_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_xs"
+            android:gravity="center"
+            android:maxLines="2"
+            android:ellipsize="end"
+            android:text="첫 식단을 기록했습니다."
+            android:textColor="@color/gray_subtext"
+            android:textSize="@dimen/text_xs" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

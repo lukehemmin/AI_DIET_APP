@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog_rounded"
+    android:padding="@dimen/spacing_xl">
+
+    <!-- Header -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_lg">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:text="친구 추가"
+            android:textColor="@color/gray_text"
+            android:textSize="@dimen/text_lg"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/btn_close"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:contentDescription="닫기"
+            app:tint="@color/gray_subtext" />
+    </RelativeLayout>
+
+    <!-- Radar Animation Container -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:layout_marginVertical="@dimen/spacing_lg">
+
+        <!-- Radar Pulse Rings -->
+        <View
+            android:id="@+id/radar_ring_1"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_radar_ring" />
+
+        <View
+            android:id="@+id/radar_ring_2"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_radar_ring" />
+
+        <View
+            android:id="@+id/radar_ring_3"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_radar_ring" />
+
+        <!-- Center Profile (Me) -->
+        <FrameLayout
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:background="@drawable/bg_radar_center">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_bluetooth_search"
+                app:tint="@color/primary_blue" />
+        </FrameLayout>
+
+        <!-- Found Friends Container -->
+        <FrameLayout
+            android:id="@+id/found_friends_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <!-- Dynamically added friend avatars will appear here -->
+        </FrameLayout>
+
+    </FrameLayout>
+
+    <!-- Scanning Status Text -->
+    <TextView
+        android:id="@+id/tv_scanning_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="주변에서 친구를 찾고 있습니다..."
+        android:textColor="@color/gray_subtext"
+        android:textSize="@dimen/text_base"
+        android:layout_marginBottom="@dimen/spacing_xl" />
+
+    <!-- Found Friends List (when found) -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_nearby_friends"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:maxHeight="150dp"
+        android:layout_marginBottom="@dimen/spacing_lg" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/gray_70"
+        android:layout_marginVertical="@dimen/spacing_md" />
+
+    <!-- Email Search Button -->
+    <LinearLayout
+        android:id="@+id/btn_email_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:padding="@dimen/spacing_lg"
+        android:background="?attr/selectableItemBackground"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_dialog_email"
+            app:tint="@color/primary_blue"
+            android:layout_marginEnd="@dimen/spacing_md" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="이메일로 친구 요청 보내기"
+            android:textColor="@color/primary_blue"
+            android:textSize="@dimen/text_md"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</LinearLayout>

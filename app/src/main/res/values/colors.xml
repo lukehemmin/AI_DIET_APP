@@ -2,6 +2,7 @@
 <resources>
     <!-- Primary Colors -->
     <color name="primary_blue">#0A84FF</color>
+    <color name="primary_light">#E8F4FD</color>
     <color name="state_success">#34C759</color>
     <color name="orange_500">#FF9500</color>
     <color name="primary_orange">#FF9500</color>

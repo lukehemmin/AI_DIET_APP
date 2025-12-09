@@ -4,12 +4,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.lukehemmin.ai_diet_app.R;
@@ -29,6 +30,7 @@ import retrofit2.Response;
 public class ProfileAchievementsFragment extends Fragment {
 
     private RecyclerView rvBadges;
+    private TextView tvBadgeTitle;
     private BadgeAdapter badgeAdapter;
     private ApiService apiService;
 
@@ -47,7 +49,10 @@ public class ProfileAchievementsFragment extends Fragment {
 
     private void initializeViews(View view) {
         rvBadges = view.findViewById(R.id.rv_badges);
-        rvBadges.setLayoutManager(new LinearLayoutManager(getContext()));
+        tvBadgeTitle = view.findViewById(R.id.tv_badge_title);
+        
+        // Grid layout with 3 columns
+        rvBadges.setLayoutManager(new GridLayoutManager(getContext(), 3));
         
         badgeAdapter = new BadgeAdapter();
         rvBadges.setAdapter(badgeAdapter);
@@ -60,10 +65,11 @@ public class ProfileAchievementsFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null && response.body().getData() != null) {
                     List<BadgeResponse> badges = response.body().getData();
                     badgeAdapter.setBadges(badges);
+                    updateTitle(badges);
                 } else {
                     // If fails or empty, maybe show empty state or toast
-                    // For now just empty list
                     badgeAdapter.setBadges(new ArrayList<>());
+                    tvBadgeTitle.setText("나의 업적 (0/0)");
                 }
             }
 
@@ -72,5 +78,11 @@ public class ProfileAchievementsFragment extends Fragment {
                 Toast.makeText(getContext(), "배지 정보를 불러오는데 실패했습니다.", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+    
+    private void updateTitle(List<BadgeResponse> badges) {
+        int unlocked = badgeAdapter.getUnlockedCount();
+        int total = badges.size();
+        tvBadgeTitle.setText(String.format("나의 업적 (%d/%d)", unlocked, total));
     }
 }

@@ -39,10 +39,12 @@
                     android:id="@+id/btnEditProfile"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_edit"
+                    android:src="@drawable/ic_settings_edit"
                     android:layout_alignParentEnd="true"
                     android:contentDescription="수정"
-                    app:tint="@color/gray_subtext" />
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true" />
             </RelativeLayout>
 
             <View
@@ -159,16 +161,32 @@
             android:orientation="vertical"
             android:padding="@dimen/spacing_xl">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawableStart="@drawable/ic_flame"
-                android:drawablePadding="8dp"
-                android:gravity="center_vertical"
-                android:text="나의 목표"
-                android:textColor="@color/gray_text"
-                android:textSize="@dimen/text_md"
-                android:textStyle="bold" />
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableStart="@drawable/ic_flame"
+                    android:drawablePadding="8dp"
+                    android:gravity="center_vertical"
+                    android:text="나의 목표"
+                    android:textColor="@color/gray_text"
+                    android:textSize="@dimen/text_md"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/btnEditGoal"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_settings_edit"
+                    android:layout_alignParentEnd="true"
+                    android:contentDescription="목표 수정"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </RelativeLayout>
 
             <View
                 android:layout_width="match_parent"

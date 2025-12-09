@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog_rounded"
+    android:padding="@dimen/spacing_xxl"
+    android:gravity="center_horizontal">
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="친구 요청이 도착했습니다!"
+        android:textColor="@color/gray_text"
+        android:textSize="@dimen/text_lg"
+        android:textStyle="bold"
+        android:layout_marginBottom="@dimen/spacing_xl" />
+
+    <!-- Profile Image -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_md">
+
+        <ImageView
+            android:id="@+id/img_profile"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:background="@drawable/bg_profile_image_bordered"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_launcher_foreground" />
+
+        <!-- Online indicator -->
+        <View
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_gravity="bottom|end"
+            android:background="@drawable/bg_circle_green" />
+    </FrameLayout>
+
+    <!-- Name -->
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="김철수"
+        android:textColor="@color/gray_text"
+        android:textSize="@dimen/text_xl"
+        android:textStyle="bold"
+        android:layout_marginBottom="@dimen/spacing_xs" />
+
+    <!-- Email -->
+    <TextView
+        android:id="@+id/tv_email"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="example@email.com"
+        android:textColor="@color/gray_subtext"
+        android:textSize="@dimen/text_base"
+        android:layout_marginBottom="@dimen/spacing_xl" />
+
+    <!-- Question -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="친구 요청을 수락하시겠습니까?"
+        android:textColor="@color/gray_subtext"
+        android:textSize="@dimen/text_base"
+        android:layout_marginBottom="@dimen/spacing_xl" />
+
+    <!-- Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_reject"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="@dimen/spacing_sm"
+            android:text="거절"
+            android:textColor="@color/gray_subtext"
+            android:backgroundTint="@color/gray_70"
+            style="@style/Widget.MaterialComponents.Button" />
+
+        <Button
+            android:id="@+id/btn_accept"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/spacing_sm"
+            android:text="수락"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/primary_blue"
+            style="@style/Widget.MaterialComponents.Button" />
+
+    </LinearLayout>
+
+</LinearLayout>
