@@ -1,20 +1,11 @@
 package com.lukehemmin.ai_diet_app.data.model;
 
-public class FriendResponse {
-    private String id;
+public class GroupMemberResponse {
     private String userId;
-    private String email;
     private String name;
     private String profileImageUrl;
-    private String status;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
+    private String role;
+    private String joinedAt;
 
     public String getUserId() {
         return userId;
@@ -22,14 +13,6 @@ public class FriendResponse {
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getName() {
@@ -48,11 +31,19 @@ public class FriendResponse {
         this.profileImageUrl = profileImageUrl;
     }
 
-    public String getStatus() {
-        return status;
+    public String getRole() {
+        return role;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setRole(String role) {
+        this.role = role;
+    }
+
+    public String getJoinedAt() {
+        return joinedAt;
+    }
+
+    public void setJoinedAt(String joinedAt) {
+        this.joinedAt = joinedAt;
     }
 }

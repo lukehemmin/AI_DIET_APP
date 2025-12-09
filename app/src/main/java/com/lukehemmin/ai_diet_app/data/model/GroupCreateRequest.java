@@ -1,9 +1,12 @@
 package com.lukehemmin.ai_diet_app.data.model;
 
+import java.util.List;
+
 public class GroupCreateRequest {
     private String name;
     private String description;
     private String challenge;
+    private List<String> invitedFriendIds;
 
     public GroupCreateRequest(String name, String description, String challenge) {
         this.name = name;
@@ -33,5 +36,13 @@ public class GroupCreateRequest {
 
     public void setChallenge(String challenge) {
         this.challenge = challenge;
+    }
+
+    public List<String> getInvitedFriendIds() {
+        return invitedFriendIds;
+    }
+
+    public void setInvitedFriendIds(List<String> invitedFriendIds) {
+        this.invitedFriendIds = invitedFriendIds;
     }
 }

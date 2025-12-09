@@ -87,6 +87,46 @@ public interface ApiService {
     @GET("api/groups")
     Call<ApiResponse<java.util.Map<String, java.util.List<GroupResponse>>>> getGroups();
 
+    @GET("api/groups/{groupId}")
+    Call<ApiResponse<com.lukehemmin.ai_diet_app.data.model.GroupDetailResponse>> getGroupDetail(@Path("groupId") String groupId);
+
+    @GET("api/groups/my")
+    Call<ApiResponse<java.util.Map<String, java.util.List<GroupResponse>>>> getMyGroups();
+
+    @retrofit2.http.PUT("api/groups/{groupId}")
+    Call<ApiResponse<java.util.Map<String, GroupResponse>>> updateGroup(@Path("groupId") String groupId, @Body GroupCreateRequest request);
+
+    @POST("api/groups/{groupId}/leave")
+    Call<ApiResponse<java.util.Map<String, String>>> leaveGroup(@Path("groupId") String groupId);
+
+    @DELETE("api/groups/{groupId}")
+    Call<ApiResponse<java.util.Map<String, String>>> deleteGroup(@Path("groupId") String groupId);
+
+    @GET("api/groups/{groupId}/role")
+    Call<ApiResponse<java.util.Map<String, String>>> getGroupRole(@Path("groupId") String groupId);
+
+    // Group Feed
+    @GET("api/groups/{groupId}/feeds")
+    Call<ApiResponse<java.util.Map<String, Object>>> getGroupFeeds(
+            @Path("groupId") String groupId,
+            @retrofit2.http.Query("page") int page,
+            @retrofit2.http.Query("size") int size);
+
+    @POST("api/groups/share-meal")
+    Call<ApiResponse<java.util.Map<String, Object>>> shareMealToGroups(@Body java.util.Map<String, Object> request);
+
+    @POST("api/groups/feeds/{feedId}/comments")
+    Call<ApiResponse<Object>> addFeedComment(@Path("feedId") String feedId, @Body java.util.Map<String, String> request);
+
+    @GET("api/groups/feeds/{feedId}/comments")
+    Call<ApiResponse<java.util.Map<String, Object>>> getFeedComments(@Path("feedId") String feedId);
+
+    @POST("api/groups/feeds/{feedId}/reactions")
+    Call<ApiResponse<java.util.Map<String, Object>>> toggleFeedReaction(@Path("feedId") String feedId, @Body java.util.Map<String, String> request);
+
+    @DELETE("api/groups/feeds/{feedId}")
+    Call<ApiResponse<java.util.Map<String, String>>> deleteFeed(@Path("feedId") String feedId);
+
     // Friends
     @POST("api/friends/request")
     Call<ApiResponse<Void>> sendFriendRequest(@Body FriendRequest request);

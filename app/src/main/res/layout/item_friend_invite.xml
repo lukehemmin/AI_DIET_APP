@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="@dimen/spacing_md"
+    android:background="?attr/selectableItemBackground">
+
+    <CheckBox
+        android:id="@+id/cb_invite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:buttonTint="@color/primary_blue"
+        android:layout_marginEnd="@dimen/spacing_md"/>
+
+    <ImageView
+        android:id="@+id/iv_profile"
+        android:layout_width="@dimen/profile_image_sm"
+        android:layout_height="@dimen/profile_image_sm"
+        android:scaleType="centerCrop"
+        android:background="@drawable/bg_profile_image"
+        android:src="@drawable/ic_launcher_foreground"
+        android:contentDescription="친구 프로필 사진"/>
+
+    <TextView
+        android:id="@+id/tv_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="홍길동"
+        android:textColor="@color/gray_text"
+        android:textSize="@dimen/text_base"
+        android:layout_marginStart="@dimen/spacing_md"
+        android:maxLines="1"
+        android:ellipsize="end"/>
+
+</LinearLayout>

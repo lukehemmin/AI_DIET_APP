@@ -15,4 +15,5 @@
         <item name="android:textColor">@color/gray_subtext</item>
         <item name="android:textSize">@dimen/text_sm</item>
     </style>
+
 </resources>

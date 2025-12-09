@@ -55,6 +55,8 @@ public class User {
 
     private String providerId;
     
+    private String profileImageUrl;
+    
     @ElementCollection
     @CollectionTable(name = "user_badges", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "badge_id")

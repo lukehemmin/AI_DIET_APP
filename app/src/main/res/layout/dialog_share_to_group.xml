@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_xl"
+    android:background="@drawable/bg_bottom_sheet">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="@dimen/spacing_lg">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_launcher_foreground"
+            android:background="@drawable/bg_profile_image"
+            android:scaleType="centerCrop"/>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="@dimen/spacing_md">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="그룹에 공유하기"
+                android:textSize="@dimen/text_lg"
+                android:textStyle="bold"
+                android:textColor="@color/gray_text"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="식단을 그룹 멤버들과 공유해보세요"
+                android:textSize="@dimen/text_sm"
+                android:textColor="@color/gray_subtext"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- 공유할 그룹 선택 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="공유할 그룹 선택"
+        android:textSize="@dimen/text_base"
+        android:textStyle="bold"
+        android:textColor="@color/gray_text"
+        android:layout_marginBottom="@dimen/spacing_sm"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_groups"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="200dp"
+        android:layout_marginBottom="@dimen/spacing_md"/>
+
+    <!-- 그룹이 없을 때 -->
+    <LinearLayout
+        android:id="@+id/ll_no_groups"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="@dimen/spacing_xl"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="참여 중인 그룹이 없습니다"
+            android:textSize="@dimen/text_base"
+            android:textColor="@color/gray_subtext"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="그룹 탭에서 그룹을 만들거나 참여해보세요"
+            android:textSize="@dimen/text_sm"
+            android:textColor="@color/gray_70"
+            android:layout_marginTop="@dimen/spacing_xs"/>
+    </LinearLayout>
+
+    <!-- 메시지 입력 (선택) -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="한마디 남기기 (선택)"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_marginBottom="@dimen/spacing_lg">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:inputType="textMultiLine"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- 버튼 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/btn_skip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="건너뛰기"
+            android:textColor="@color/gray_subtext"
+            style="@style/Widget.MaterialComponents.Button.TextButton"/>
+
+        <Button
+            android:id="@+id/btn_share"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="공유하기"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/primary_blue"
+            android:layout_marginStart="@dimen/spacing_sm"/>
+    </LinearLayout>
+</LinearLayout>

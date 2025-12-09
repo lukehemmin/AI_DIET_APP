@@ -30,8 +30,18 @@ public class Group {
 
     private String challenge;
 
+    // 챌린지 기간 (일수), 기본 7일
+    @Column(columnDefinition = "integer default 7")
+    private Integer challengeDays = 7;
+
+    // 챌린지 시작일
+    private LocalDateTime challengeStartDate;
+
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<GroupMember> members = new ArrayList<>();
+
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GroupFeed> feeds = new ArrayList<>();
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

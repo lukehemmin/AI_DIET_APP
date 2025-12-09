@@ -705,6 +705,14 @@ public class HomeFragment extends Fragment {
                     dialog.dismiss();
                     // Refresh meal list
                     loadMealsForDate(currentSelectedDate);
+                    
+                    // 그룹 공유 다이얼로그 표시
+                    List<MealResponse> savedMeals = response.body().getData().get("meals");
+                    if (savedMeals != null && !savedMeals.isEmpty()) {
+                        // 첫 번째 식단의 ID로 공유 (여러 개일 경우 대표로)
+                        String mealId = savedMeals.get(0).getId().toString();
+                        showShareToGroupDialog(mealId);
+                    }
                 } else {
                     Toast.makeText(getContext(), "저장 실패: " + (response.body() != null ? response.body().getMessage() : "오류"), Toast.LENGTH_SHORT).show();
                 }
@@ -715,6 +723,17 @@ public class HomeFragment extends Fragment {
                 Toast.makeText(getContext(), "네트워크 오류: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    /**
+     * 그룹 공유 다이얼로그 표시
+     */
+    private void showShareToGroupDialog(String mealId) {
+        ShareToGroupBottomSheet bottomSheet = ShareToGroupBottomSheet.newInstance(mealId);
+        bottomSheet.setOnShareCompleteListener(shared -> {
+            // 공유 완료 여부에 관계없이 추가 작업 가능
+        });
+        bottomSheet.show(getChildFragmentManager(), "ShareToGroupBottomSheet");
     }
 
     private class CalendarAdapter extends RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder> {
