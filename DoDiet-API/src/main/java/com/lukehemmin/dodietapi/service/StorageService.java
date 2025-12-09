@@ -30,6 +30,7 @@ public class StorageService {
             this.rootLocation = Paths.get(uploadDir);
             Files.createDirectories(rootLocation);
             Files.createDirectories(rootLocation.resolve("meals"));
+            Files.createDirectories(rootLocation.resolve("profiles"));
             log.info("Storage initialized at: {}", rootLocation.toAbsolutePath());
         } catch (IOException e) {
             throw new RuntimeException("Could not initialize storage location", e);
@@ -82,5 +83,12 @@ public class StorageService {
     
     public Path load(String filename) {
         return rootLocation.resolve(filename);
+    }
+
+    /**
+     * 프로필 이미지 저장
+     */
+    public String storeProfileImage(MultipartFile file, String userId) {
+        return store(file, "profiles", userId);
     }
 }

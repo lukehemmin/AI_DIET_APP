@@ -177,6 +177,7 @@ public class AuthService {
         String email = (String) googleInfo.get("email");
         String name = (String) googleInfo.get("name");
         String providerId = (String) googleInfo.get("sub");
+        String googleProfileImage = (String) googleInfo.get("picture");
         if (name == null) name = "Google User";
 
         // 2. Check if user exists
@@ -190,6 +191,11 @@ public class AuthService {
             user.setName(name);
             user.setAuthProvider(com.lukehemmin.dodietapi.entity.AuthProvider.GOOGLE);
             user.setProviderId(providerId);
+            
+            // Google 프로필 사진 설정
+            if (googleProfileImage != null && !googleProfileImage.isEmpty()) {
+                user.setProfileImageUrl(googleProfileImage);
+            }
             
             // Set Default Values for required fields
             user.setGender(com.lukehemmin.dodietapi.entity.Gender.MALE);
@@ -208,8 +214,14 @@ public class AuthService {
              // Link Google Account if not linked yet
              if (user.getProviderId() == null) {
                  user.setProviderId(providerId);
-                 userRepository.save(user);
              }
+             
+             // 프로필 사진이 없으면 Google 프로필 사진으로 설정
+             if (user.getProfileImageUrl() == null && googleProfileImage != null && !googleProfileImage.isEmpty()) {
+                 user.setProfileImageUrl(googleProfileImage);
+             }
+             
+             userRepository.save(user);
         }
 
         // 4. Generate Tokens manually since we don't have password for authenticationManager

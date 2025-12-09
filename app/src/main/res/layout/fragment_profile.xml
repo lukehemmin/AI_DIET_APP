@@ -30,7 +30,7 @@
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
-            <!-- Profile Image with Badge -->
+            <!-- Profile Image with Camera Icon -->
             <FrameLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
@@ -40,12 +40,12 @@
                     android:layout_width="96dp"
                     android:layout_height="96dp"
                     android:background="@drawable/bg_profile_image_bordered"
-                    android:contentDescription="프로필 사진"
+                    android:contentDescription="프로필 사진 (클릭하여 변경)"
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_launcher_foreground"
                     android:clipToOutline="true" />
 
-                <!-- Profile Badge -->
+                <!-- Camera Icon (Edit Profile Image) -->
                 <FrameLayout
                     android:layout_width="28dp"
                     android:layout_height="28dp"
@@ -58,8 +58,8 @@
                         android:layout_width="16dp"
                         android:layout_height="16dp"
                         android:layout_gravity="center"
-                        android:src="@drawable/ic_person_white"
-                        android:contentDescription="프로필 뱃지" />
+                        android:src="@drawable/ic_camera"
+                        android:contentDescription="사진 변경" />
                 </FrameLayout>
             </FrameLayout>
 

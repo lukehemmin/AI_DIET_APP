@@ -6,12 +6,16 @@ import com.lukehemmin.dodietapi.entity.ActivityLevel;
 import com.lukehemmin.dodietapi.entity.Gender;
 import com.lukehemmin.dodietapi.entity.User;
 import com.lukehemmin.dodietapi.repository.UserRepository;
+import com.lukehemmin.dodietapi.service.StorageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class MemberController {
 
     private final UserRepository userRepository;
+    private final StorageService storageService;
 
     /**
      * 현재 로그인한 사용자의 프로필 조회
@@ -41,6 +46,8 @@ public class MemberController {
                 .activityLevel(user.getActivityLevel() != null ? user.getActivityLevel().name() : null)
                 .bmr(calculateBmr(user))
                 .goalIntake(calculateGoalIntake(user))
+                .profileImageUrl(user.getProfileImageUrl())
+                .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)
                 .build();
         
         return ResponseEntity.ok(ApiResponse.success(response));
@@ -87,9 +94,50 @@ public class MemberController {
                 .activityLevel(user.getActivityLevel() != null ? user.getActivityLevel().name() : null)
                 .bmr(calculateBmr(user))
                 .goalIntake(request.getGoalIntake() != null ? request.getGoalIntake() : calculateGoalIntake(user))
+                .profileImageUrl(user.getProfileImageUrl())
+                .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)
                 .build();
         
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * 프로필 이미지 업로드
+     */
+    @PostMapping("/me/profile-image")
+    public ResponseEntity<ApiResponse<Map<String, String>>> uploadProfileImage(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam("image") MultipartFile image) {
+        
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        try {
+            String imageUrl = storageService.storeProfileImage(image, user.getId().toString());
+            user.setProfileImageUrl(imageUrl);
+            userRepository.save(user);
+            
+            return ResponseEntity.ok(ApiResponse.success(Map.of("profileImageUrl", imageUrl)));
+        } catch (Exception e) {
+            log.error("프로필 이미지 업로드 실패: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(ApiResponse.error("이미지 업로드에 실패했습니다."));
+        }
+    }
+
+    /**
+     * 프로필 이미지 삭제
+     */
+    @DeleteMapping("/me/profile-image")
+    public ResponseEntity<ApiResponse<Map<String, String>>> deleteProfileImage(
+            @AuthenticationPrincipal UserDetails userDetails) {
+        
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        user.setProfileImageUrl(null);
+        userRepository.save(user);
+        
+        return ResponseEntity.ok(ApiResponse.success(Map.of("message", "프로필 이미지가 삭제되었습니다.")));
     }
 
     /**

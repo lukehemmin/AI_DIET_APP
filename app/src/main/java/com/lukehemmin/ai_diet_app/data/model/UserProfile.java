@@ -10,6 +10,8 @@ public class UserProfile {
     private String activityLevel; // SEDENTARY, LIGHT, ...
     private Double bmr;
     private Double goalIntake;
+    private String profileImageUrl;
+    private String createdAt;
 
     public UserProfile() {
     }
@@ -60,5 +62,21 @@ public class UserProfile {
 
     public Double getGoalIntake() {
         return goalIntake;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
 }

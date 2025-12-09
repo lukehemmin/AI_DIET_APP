@@ -19,4 +19,6 @@ public class UserProfileResponse {
     private String activityLevel;
     private Double bmr;
     private Double goalIntake;
+    private String profileImageUrl;
+    private String createdAt;
 }

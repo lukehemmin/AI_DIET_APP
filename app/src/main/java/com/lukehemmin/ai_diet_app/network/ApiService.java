@@ -69,6 +69,13 @@ public interface ApiService {
     Call<ApiResponse<UserProfile>> updateProfile(@Body UserProfile request);
 
     @Multipart
+    @POST("api/members/me/profile-image")
+    Call<ApiResponse<java.util.Map<String, String>>> uploadProfileImage(@Part MultipartBody.Part image);
+
+    @DELETE("api/members/me/profile-image")
+    Call<ApiResponse<java.util.Map<String, String>>> deleteProfileImage();
+
+    @Multipart
     @POST("api/meals/analyze")
     Call<ApiResponse<MealAnalysisResponse>> analyzeMeal(@Part MultipartBody.Part image);
 

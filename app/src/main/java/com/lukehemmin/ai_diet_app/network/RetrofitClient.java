@@ -96,4 +96,8 @@ public class RetrofitClient {
                 .client(clientBuilder.build())
                 .build();
     }
+
+    public static String getBaseUrl(Context context) {
+        return BASE_URL;
+    }
 }
