@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +34,7 @@ import com.google.android.material.chip.Chip;
 import com.lukehemmin.ai_diet_app.R;
 import com.lukehemmin.ai_diet_app.adapter.RecipeHistoryAdapter;
 import com.lukehemmin.ai_diet_app.data.model.AiAnalysisResponse;
+import com.lukehemmin.ai_diet_app.data.model.DietAnalyticsResponse;
 import com.lukehemmin.ai_diet_app.data.model.FridgeRecipeHistoryResponse;
 
 import io.noties.markwon.Markwon;
@@ -77,10 +79,19 @@ public class AnalysisDietFragment extends Fragment {
     private BarChart chartCalorieTrend;
     private RadarChart chartWeeklyNutrition;
     private Chip chip7days, chip30days;
+    
+    // Analytics UI
+    private TextView txtEatingHabits;
+    private TextView txtBadHabitsPercent;
+    private TextView txtGoodHabitsPercent;
+    private TextView txtImprovePercent;
+    private TextView txtPatternAnalysis;
+    private LinearLayout containerMealHeatmap;
 
     private Handler cooldownHandler = new Handler(Looper.getMainLooper());
     private ApiService apiService;
     private Markwon markwon;
+    private int currentAnalyticsDays = 7;
 
     @Nullable
     @Override
@@ -135,6 +146,14 @@ public class AnalysisDietFragment extends Fragment {
         chartWeeklyNutrition = view.findViewById(R.id.chart_weekly_nutrition);
         chip7days = view.findViewById(R.id.chip_7days);
         chip30days = view.findViewById(R.id.chip_30days);
+        
+        // Analytics
+        txtEatingHabits = view.findViewById(R.id.txt_eating_habits);
+        txtBadHabitsPercent = view.findViewById(R.id.txt_bad_habits_percent);
+        txtGoodHabitsPercent = view.findViewById(R.id.txt_good_habits_percent);
+        txtImprovePercent = view.findViewById(R.id.txt_improve_percent);
+        txtPatternAnalysis = view.findViewById(R.id.txt_pattern_analysis);
+        containerMealHeatmap = view.findViewById(R.id.container_meal_heatmap);
     }
 
     private void setupListeners() {
@@ -144,10 +163,16 @@ public class AnalysisDietFragment extends Fragment {
         btnRecipeHistory.setOnClickListener(v -> showRecipeHistoryDialog());
 
         chip7days.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) updateChart(7);
+            if (isChecked) {
+                currentAnalyticsDays = 7;
+                loadDietAnalytics(7);
+            }
         });
         chip30days.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) updateChart(30);
+            if (isChecked) {
+                currentAnalyticsDays = 30;
+                loadDietAnalytics(30);
+            }
         });
     }
 
@@ -160,50 +185,24 @@ public class AnalysisDietFragment extends Fragment {
         chartCalorieTrend.getAxisLeft().setEnabled(false);
         chartCalorieTrend.getAxisRight().setEnabled(false);
         chartCalorieTrend.setTouchEnabled(false);
-        updateChart(7);
 
         // Radar Chart
         chartWeeklyNutrition.getDescription().setEnabled(false);
-        chartWeeklyNutrition.getLegend().setEnabled(false);
+        chartWeeklyNutrition.getLegend().setEnabled(true);
         chartWeeklyNutrition.getYAxis().setEnabled(false);
-        chartWeeklyNutrition.getXAxis().setValueFormatter(new IndexAxisValueFormatter(new String[]{"탄수화물", "단백질", "지방"}));
-        updateRadarChart();
-    }
-
-    private void updateChart(int days) {
-        ArrayList<BarEntry> entries = new ArrayList<>();
-        for (int i = 0; i < days; i++) {
-            entries.add(new BarEntry(i, (float) (1500 + Math.random() * 1000)));
-        }
-        BarDataSet dataSet = new BarDataSet(entries, "칼로리");
-        dataSet.setColor(requireContext().getColor(R.color.primary_blue));
-        dataSet.setDrawValues(false);
-        chartCalorieTrend.setData(new BarData(dataSet));
-        chartCalorieTrend.invalidate();
-    }
-
-    private void updateRadarChart() {
-        ArrayList<RadarEntry> entries = new ArrayList<>();
-        entries.add(new RadarEntry(0.7f));
-        entries.add(new RadarEntry(0.5f));
-        entries.add(new RadarEntry(0.8f));
-
-        RadarDataSet dataSet = new RadarDataSet(entries, "영양");
-        dataSet.setColor(requireContext().getColor(R.color.primary_green));
-        dataSet.setFillColor(requireContext().getColor(R.color.primary_green));
-        dataSet.setDrawFilled(true);
-        dataSet.setLineWidth(2f);
-
-        RadarData radarData = new RadarData(dataSet);
-        radarData.setDrawValues(false);
-        chartWeeklyNutrition.setData(radarData);
-        chartWeeklyNutrition.invalidate();
+        chartWeeklyNutrition.getYAxis().setAxisMinimum(0f);
+        chartWeeklyNutrition.getYAxis().setAxisMaximum(150f);
+        chartWeeklyNutrition.setWebLineWidth(1f);
+        chartWeeklyNutrition.setWebColor(requireContext().getColor(R.color.gray_70));
+        chartWeeklyNutrition.setWebLineWidthInner(1f);
+        chartWeeklyNutrition.setWebColorInner(requireContext().getColor(R.color.gray_70));
     }
 
     private void loadData() {
         loadExercisePlan();
         loadCustomRecipe();
         loadLatestFridgeRecipe();
+        loadDietAnalytics(currentAnalyticsDays);
     }
 
     // ===== Exercise Plan =====
@@ -492,6 +491,190 @@ public class AnalysisDietFragment extends Fragment {
         });
         
         dialog.show();
+    }
+
+    // ===== Diet Analytics =====
+    private void loadDietAnalytics(int days) {
+        apiService.getDietAnalytics(days).enqueue(new Callback<ApiResponse<DietAnalyticsResponse>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<DietAnalyticsResponse>> call, Response<ApiResponse<DietAnalyticsResponse>> response) {
+                if (!isAdded()) return;
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    DietAnalyticsResponse data = response.body().getData();
+                    if (data != null) {
+                        updateCalorieTrendChart(data.getCalorieTrend());
+                        updateNutritionBalanceChart(data.getNutritionBalance());
+                        updateEatingHabitsAnalysis(data.getEatingHabitsAnalysis());
+                        updatePatternAnalysis(data.getPatternAnalysis());
+                        updateMealTimeHeatmap(data.getMealTimePattern());
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<DietAnalyticsResponse>> call, Throwable t) {
+                // 실패 시 무시
+            }
+        });
+    }
+    
+    private void updateCalorieTrendChart(List<DietAnalyticsResponse.CalorieTrendItem> trend) {
+        if (trend == null || trend.isEmpty()) return;
+        
+        ArrayList<BarEntry> entries = new ArrayList<>();
+        ArrayList<String> labels = new ArrayList<>();
+        
+        for (int i = 0; i < trend.size(); i++) {
+            DietAnalyticsResponse.CalorieTrendItem item = trend.get(i);
+            entries.add(new BarEntry(i, (float) item.getCalories()));
+            labels.add(item.getDayOfWeek());
+        }
+        
+        BarDataSet dataSet = new BarDataSet(entries, "칼로리");
+        dataSet.setColor(requireContext().getColor(R.color.primary_blue));
+        dataSet.setValueTextColor(requireContext().getColor(R.color.gray_text));
+        dataSet.setValueTextSize(10f);
+        
+        BarData barData = new BarData(dataSet);
+        barData.setBarWidth(0.6f);
+        
+        chartCalorieTrend.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
+        chartCalorieTrend.getXAxis().setPosition(com.github.mikephil.charting.components.XAxis.XAxisPosition.BOTTOM);
+        chartCalorieTrend.getXAxis().setGranularity(1f);
+        chartCalorieTrend.getXAxis().setEnabled(true);
+        chartCalorieTrend.getXAxis().setDrawGridLines(false);
+        chartCalorieTrend.getXAxis().setTextColor(requireContext().getColor(R.color.gray_50));
+        
+        chartCalorieTrend.setData(barData);
+        chartCalorieTrend.animateY(500);
+        chartCalorieTrend.invalidate();
+    }
+    
+    private void updateNutritionBalanceChart(DietAnalyticsResponse.NutritionBalance balance) {
+        if (balance == null) return;
+        
+        // 내 섭취량
+        ArrayList<RadarEntry> myEntries = new ArrayList<>();
+        myEntries.add(new RadarEntry((float) balance.getMyProtein()));
+        myEntries.add(new RadarEntry((float) balance.getMyCarbs()));
+        myEntries.add(new RadarEntry((float) balance.getMyFat()));
+        myEntries.add(new RadarEntry((float) balance.getMyFiber()));
+        myEntries.add(new RadarEntry((float) balance.getMyWater()));
+        
+        RadarDataSet myDataSet = new RadarDataSet(myEntries, "내 섭취량");
+        myDataSet.setColor(requireContext().getColor(R.color.primary_green));
+        myDataSet.setFillColor(requireContext().getColor(R.color.primary_green));
+        myDataSet.setDrawFilled(true);
+        myDataSet.setFillAlpha(100);
+        myDataSet.setLineWidth(2f);
+        
+        // 권장 섭취량
+        ArrayList<RadarEntry> recEntries = new ArrayList<>();
+        recEntries.add(new RadarEntry((float) balance.getRecommendedProtein()));
+        recEntries.add(new RadarEntry((float) balance.getRecommendedCarbs()));
+        recEntries.add(new RadarEntry((float) balance.getRecommendedFat()));
+        recEntries.add(new RadarEntry((float) balance.getRecommendedFiber()));
+        recEntries.add(new RadarEntry((float) balance.getRecommendedWater()));
+        
+        RadarDataSet recDataSet = new RadarDataSet(recEntries, "권장량");
+        recDataSet.setColor(requireContext().getColor(R.color.primary_blue));
+        recDataSet.setFillColor(requireContext().getColor(R.color.primary_blue));
+        recDataSet.setDrawFilled(true);
+        recDataSet.setFillAlpha(50);
+        recDataSet.setLineWidth(2f);
+        
+        RadarData radarData = new RadarData(recDataSet, myDataSet);
+        radarData.setDrawValues(false);
+        
+        // 라벨 설정
+        String[] labels = {"단백질", "탄수화물", "지방", "식이섬유", "수분"};
+        chartWeeklyNutrition.getXAxis().setValueFormatter(new IndexAxisValueFormatter(labels));
+        
+        chartWeeklyNutrition.setData(radarData);
+        chartWeeklyNutrition.animateXY(500, 500);
+        chartWeeklyNutrition.invalidate();
+    }
+    
+    private void updateEatingHabitsAnalysis(String analysis) {
+        if (txtEatingHabits != null && analysis != null) {
+            txtEatingHabits.setText(analysis);
+        }
+    }
+    
+    private void updatePatternAnalysis(DietAnalyticsResponse.PatternAnalysis pattern) {
+        if (pattern == null) return;
+        
+        if (txtBadHabitsPercent != null) {
+            txtBadHabitsPercent.setText(pattern.getBadHabitsPercent() + "%");
+        }
+        if (txtGoodHabitsPercent != null) {
+            txtGoodHabitsPercent.setText(pattern.getGoodHabitsPercent() + "%");
+        }
+        if (txtImprovePercent != null) {
+            txtImprovePercent.setText(pattern.getImprovePercent() + "%");
+        }
+        if (txtPatternAnalysis != null && pattern.getAnalysisText() != null) {
+            txtPatternAnalysis.setText(pattern.getAnalysisText());
+        }
+    }
+    
+    private void updateMealTimeHeatmap(List<DietAnalyticsResponse.MealTimePattern> patterns) {
+        if (containerMealHeatmap == null || patterns == null || patterns.size() < 7) return;
+        
+        containerMealHeatmap.removeAllViews();
+        
+        String[] mealLabels = {"아침", "점심", "저녁"};
+        int[] heatmapColors = {
+                R.drawable.bg_heatmap_level0,
+                R.drawable.bg_heatmap_level1,
+                R.drawable.bg_heatmap_level2,
+                R.drawable.bg_heatmap_level3
+        };
+        
+        for (int row = 0; row < 3; row++) {
+            LinearLayout rowLayout = new LinearLayout(requireContext());
+            rowLayout.setOrientation(LinearLayout.HORIZONTAL);
+            rowLayout.setLayoutParams(new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            rowLayout.setPadding(0, 8, 0, 8);
+            
+            // 식사 타입 레이블
+            TextView label = new TextView(requireContext());
+            label.setText(mealLabels[row]);
+            label.setTextColor(requireContext().getColor(R.color.gray_subtext));
+            label.setTextSize(12);
+            label.setWidth((int) (40 * getResources().getDisplayMetrics().density));
+            label.setGravity(android.view.Gravity.CENTER_VERTICAL);
+            rowLayout.addView(label);
+            
+            // 각 요일별 셀
+            for (int col = 0; col < 7; col++) {
+                DietAnalyticsResponse.MealTimePattern pattern = patterns.get(col);
+                int count;
+                if (row == 0) {
+                    count = pattern.getBreakfastCount();
+                } else if (row == 1) {
+                    count = pattern.getLunchCount();
+                } else {
+                    count = pattern.getDinnerCount();
+                }
+                
+                // 레벨 결정 (0-4 -> 0-3)
+                int level = Math.min(count, 3);
+                
+                View cell = new View(requireContext());
+                LinearLayout.LayoutParams cellParams = new LinearLayout.LayoutParams(
+                        0, (int) (32 * getResources().getDisplayMetrics().density), 1f);
+                cellParams.setMargins(4, 0, 4, 0);
+                cell.setLayoutParams(cellParams);
+                cell.setBackgroundResource(heatmapColors[level]);
+                
+                rowLayout.addView(cell);
+            }
+            
+            containerMealHeatmap.addView(rowLayout);
+        }
     }
 
     // ===== Common =====

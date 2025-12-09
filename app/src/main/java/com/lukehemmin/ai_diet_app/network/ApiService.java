@@ -21,6 +21,7 @@ import com.lukehemmin.ai_diet_app.data.model.UserChallengeResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
@@ -154,4 +155,15 @@ public interface ApiService {
     // AI Analysis Preload (백그라운드 캐시 갱신)
     @POST("api/ai-analysis/preload")
     Call<ApiResponse<String>> preloadAiCache();
+
+    // Diet Analytics (칼로리 트렌드, 영양 균형, 식습관 분석 등)
+    @GET("api/analytics/diet")
+    Call<ApiResponse<com.lukehemmin.ai_diet_app.data.model.DietAnalyticsResponse>> getDietAnalytics(@retrofit2.http.Query("days") int days);
+
+    // Chat History
+    @GET("api/ai/chat/history")
+    Call<ApiResponse<java.util.List<com.lukehemmin.ai_diet_app.data.model.ChatHistoryResponse>>> getChatHistory(@retrofit2.http.Query("limit") int limit);
+
+    @DELETE("api/ai/chat/history")
+    Call<ApiResponse<String>> clearChatHistory();
 }

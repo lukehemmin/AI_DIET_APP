@@ -4,10 +4,12 @@ import com.lukehemmin.dodietapi.dto.response.AiAnalysisResponse;
 import com.lukehemmin.dodietapi.dto.response.FridgeRecipeHistoryResponse;
 import com.lukehemmin.dodietapi.entity.AiAnalysisCache;
 import com.lukehemmin.dodietapi.entity.AiAnalysisType;
+import com.lukehemmin.dodietapi.entity.AiMemory;
 import com.lukehemmin.dodietapi.entity.FridgeRecipeHistory;
 import com.lukehemmin.dodietapi.entity.Meal;
 import com.lukehemmin.dodietapi.entity.User;
 import com.lukehemmin.dodietapi.repository.AiAnalysisCacheRepository;
+import com.lukehemmin.dodietapi.repository.AiMemoryRepository;
 import com.lukehemmin.dodietapi.repository.FridgeRecipeHistoryRepository;
 import com.lukehemmin.dodietapi.repository.MealRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,7 @@ public class AiAnalysisService {
     private final AiAnalysisCacheRepository cacheRepository;
     private final FridgeRecipeHistoryRepository fridgeRecipeHistoryRepository;
     private final MealRepository mealRepository;
+    private final AiMemoryRepository aiMemoryRepository;
     private final GeminiService geminiService;
 
     private static final int COOLDOWN_MINUTES = 60;      // 새로고침 쿨다운 1시간
@@ -244,6 +247,7 @@ public class AiAnalysisService {
         
         String mealSummary = buildMealSummary(recentMeals);
         String userInfo = buildUserInfo(user);
+        String userPreferences = buildUserPreferences(user);
 
         switch (type) {
             case WEEKLY_EXERCISE_PLAN:
@@ -251,16 +255,18 @@ public class AiAnalysisService {
                     피트니스 코치로서 맞춤 운동 플랜 제안.
                     [사용자] %s
                     [식단요약] %s
+                    %s
                     형식: 1.목표(1줄) 2.추천운동(3개) 3.주의사항(1줄). 한국어, 간결하게.
-                    """, userInfo, mealSummary);
+                    """, userInfo, mealSummary, userPreferences);
 
             case CUSTOM_RECIPE:
                 return String.format("""
                     영양사로서 부족 영양소 보충 레시피 1개 추천.
                     [사용자] %s
                     [식단요약] %s
+                    %s
                     형식: 요리명, 재료, 영양정보, 추천이유(1줄). 한국어, 간결하게.
-                    """, userInfo, mealSummary);
+                    """, userInfo, mealSummary, userPreferences);
 
             default:
                 return "안녕하세요!";
@@ -269,24 +275,28 @@ public class AiAnalysisService {
 
     private String buildDailyMealPlanPrompt(User user, String preference) {
         String userInfo = buildUserInfo(user);
+        String userPreferences = buildUserPreferences(user);
         
         return String.format("""
             영양사로서 하루 식단 제안.
             [사용자] %s
             [선호] %s
+            %s
             형식: 🌅아침(메뉴,칼로리) ☀️점심 🌙저녁 🍎간식 📊총칼로리 💡팁(1줄). 한국어.
-            """, userInfo, preference);
+            """, userInfo, preference, userPreferences);
     }
 
     private String buildFridgeRecipePrompt(User user, String ingredients) {
         String userInfo = buildUserInfo(user);
+        String userPreferences = buildUserPreferences(user);
         
         return String.format("""
             요리사로서 재료 활용 레시피 1개 추천.
             [사용자] %s
             [재료] %s
+            %s
             형식: 요리명, 재료분량, 조리법(3단계), 영양정보. 한국어, 간결하게.
-            """, userInfo, ingredients);
+            """, userInfo, ingredients, userPreferences);
     }
 
     private String buildMealSummary(List<Meal> meals) {
@@ -319,5 +329,71 @@ public class AiAnalysisService {
             user.getHeight() != null ? user.getHeight() : 0,
             user.getWeight() != null ? user.getWeight() : 0,
             user.getActivityLevel() != null ? user.getActivityLevel().name() : "-");
+    }
+
+    /**
+     * AI 채팅에서 저장한 사용자 선호도/제한사항 가져오기
+     * - 알레르기, 싫어하는 음식, 선호도, 건강 정보 등
+     */
+    private String buildUserPreferences(User user) {
+        List<AiMemory> memories = aiMemoryRepository.findByUserOrderByImportanceDescCreatedAtDesc(user);
+        
+        if (memories.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        
+        // 알레르기 정보
+        List<AiMemory> allergies = memories.stream()
+                .filter(m -> "ALLERGY".equals(m.getCategory()))
+                .toList();
+        if (!allergies.isEmpty()) {
+            sb.append("[⚠️알레르기] ");
+            sb.append(allergies.stream().map(AiMemory::getContent).collect(Collectors.joining(", ")));
+            sb.append(" - 반드시 제외!\n");
+        }
+
+        // 싫어하는 음식
+        List<AiMemory> dislikes = memories.stream()
+                .filter(m -> "DISLIKE".equals(m.getCategory()))
+                .toList();
+        if (!dislikes.isEmpty()) {
+            sb.append("[🚫싫어함] ");
+            sb.append(dislikes.stream().map(AiMemory::getContent).collect(Collectors.joining(", ")));
+            sb.append(" - 가능하면 제외\n");
+        }
+
+        // 선호도
+        List<AiMemory> preferences = memories.stream()
+                .filter(m -> "PREFERENCE".equals(m.getCategory()))
+                .toList();
+        if (!preferences.isEmpty()) {
+            sb.append("[💚선호] ");
+            sb.append(preferences.stream().map(AiMemory::getContent).collect(Collectors.joining(", ")));
+            sb.append("\n");
+        }
+
+        // 건강 정보
+        List<AiMemory> healthInfo = memories.stream()
+                .filter(m -> "HEALTH_INFO".equals(m.getCategory()))
+                .toList();
+        if (!healthInfo.isEmpty()) {
+            sb.append("[🏥건강] ");
+            sb.append(healthInfo.stream().map(AiMemory::getContent).collect(Collectors.joining(", ")));
+            sb.append("\n");
+        }
+
+        // 목표
+        List<AiMemory> goals = memories.stream()
+                .filter(m -> "GOAL".equals(m.getCategory()))
+                .toList();
+        if (!goals.isEmpty()) {
+            sb.append("[🎯목표] ");
+            sb.append(goals.stream().map(AiMemory::getContent).collect(Collectors.joining(", ")));
+            sb.append("\n");
+        }
+
+        return sb.toString();
     }
 }

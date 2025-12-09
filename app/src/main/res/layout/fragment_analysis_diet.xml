@@ -98,7 +98,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_sm"
-                    android:textColor="@color/gray_50"
+                    android:textColor="@color/gray_subtext"
                     android:textSize="12sp"
                     android:visibility="gone" />
             </LinearLayout>
@@ -189,7 +189,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_sm"
-                    android:textColor="@color/gray_50"
+                    android:textColor="@color/gray_subtext"
                     android:textSize="12sp"
                     android:visibility="gone" />
             </LinearLayout>
@@ -280,7 +280,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_sm"
                     android:text="재료를 입력하고 버튼을 누르면 AI가 맞춤 레시피를 만들어드려요! 📜로 이전 레시피 보기"
-                    android:textColor="@color/gray_50"
+                    android:textColor="@color/gray_subtext"
                     android:textSize="12sp"
                     android:gravity="center" />
 
@@ -599,21 +599,136 @@
                     android:textSize="16sp"
                     android:textStyle="bold" />
 
-                <TextView
-                    android:layout_width="wrap_content"
+                <!-- 요일 헤더 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/spacing_xs"
-                    android:text="아침"
-                    android:textColor="@color/gray_subtext"
-                    android:textSize="12sp" />
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:orientation="horizontal">
 
-                <GridLayout
-                    android:id="@+id/grid_meal_time"
+                    <View
+                        android:layout_width="40dp"
+                        android:layout_height="1dp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="일"
+                        android:textColor="@color/gray_subtext"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="월"
+                        android:textColor="@color/gray_subtext"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="화"
+                        android:textColor="@color/gray_subtext"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="수"
+                        android:textColor="@color/gray_subtext"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="목"
+                        android:textColor="@color/gray_subtext"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="금"
+                        android:textColor="@color/gray_subtext"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="토"
+                        android:textColor="@color/gray_subtext"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <!-- 히트맵 컨테이너 -->
+                <LinearLayout
+                    android:id="@+id/container_meal_heatmap"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_sm"
-                    android:columnCount="7"
-                    android:rowCount="3" />
+                    android:orientation="vertical" />
+
+                <!-- 범례 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:gravity="end|center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="적음"
+                        android:textColor="@color/gray_subtext"
+                        android:textSize="11sp" />
+
+                    <View
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginStart="8dp"
+                        android:background="@drawable/bg_heatmap_level0" />
+
+                    <View
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/bg_heatmap_level1" />
+
+                    <View
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/bg_heatmap_level2" />
+
+                    <View
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/bg_heatmap_level3" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="많음"
+                        android:textColor="@color/gray_subtext"
+                        android:textSize="11sp" />
+                </LinearLayout>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>

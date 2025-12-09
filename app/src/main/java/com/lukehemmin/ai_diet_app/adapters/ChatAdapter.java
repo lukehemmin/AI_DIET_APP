@@ -1,5 +1,6 @@
 package com.lukehemmin.ai_diet_app.adapters;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,12 +10,20 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.lukehemmin.ai_diet_app.R;
 import com.lukehemmin.ai_diet_app.data.model.ChatMessage;
+
+import io.noties.markwon.Markwon;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder> {
 
     private List<ChatMessage> messages = new ArrayList<>();
+    private Markwon markwon;
+
+    public ChatAdapter(Context context) {
+        this.markwon = Markwon.create(context);
+    }
 
     public void addMessage(ChatMessage message) {
         messages.add(message);
@@ -31,7 +40,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
     @Override
     public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
         ChatMessage message = messages.get(position);
-        holder.bind(message);
+        holder.bind(message, markwon);
     }
 
     @Override
@@ -53,7 +62,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
             txtUserMessage = itemView.findViewById(R.id.txt_user_message);
         }
 
-        public void bind(ChatMessage message) {
+        public void bind(ChatMessage message, Markwon markwon) {
             if (message.isUser()) {
                 layoutAiMessage.setVisibility(View.GONE);
                 layoutUserMessage.setVisibility(View.VISIBLE);
@@ -61,7 +70,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
             } else {
                 layoutAiMessage.setVisibility(View.VISIBLE);
                 layoutUserMessage.setVisibility(View.GONE);
-                txtAiMessage.setText(message.getMessage());
+                // AI 메시지는 마크다운으로 렌더링
+                markwon.setMarkdown(txtAiMessage, message.getMessage());
             }
         }
     }

@@ -17,11 +17,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.lukehemmin.ai_diet_app.R;
 import com.lukehemmin.ai_diet_app.adapters.ChatAdapter;
 import com.lukehemmin.ai_diet_app.data.model.ApiResponse;
+import com.lukehemmin.ai_diet_app.data.model.ChatHistoryResponse;
 import com.lukehemmin.ai_diet_app.data.model.ChatMessage;
 import com.lukehemmin.ai_diet_app.data.model.ChatRequest;
 import com.lukehemmin.ai_diet_app.data.model.ChatResponse;
 import com.lukehemmin.ai_diet_app.network.ApiService;
 import com.lukehemmin.ai_diet_app.network.RetrofitClient;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -53,7 +56,7 @@ public class ChatFragment extends Fragment {
         btnSendMessage = view.findViewById(R.id.btn_send_message);
 
         rvChatMessages.setLayoutManager(new LinearLayoutManager(getContext()));
-        chatAdapter = new ChatAdapter();
+        chatAdapter = new ChatAdapter(requireContext());
         rvChatMessages.setAdapter(chatAdapter);
 
         apiService = RetrofitClient.getClient(getContext()).create(ApiService.class);
@@ -64,7 +67,41 @@ public class ChatFragment extends Fragment {
     }
 
     private void loadInitialMessages() {
-        chatAdapter.addMessage(new ChatMessage("안녕하세요! 저는 당신의 AI 영양사입니다. 식단이나 건강에 대해 궁금한 점이 있으신가요?", false));
+        // 서버에서 이전 대화 기록 로드
+        apiService.getChatHistory(50).enqueue(new Callback<ApiResponse<List<ChatHistoryResponse>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<ChatHistoryResponse>>> call, 
+                                   Response<ApiResponse<List<ChatHistoryResponse>>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    List<ChatHistoryResponse> histories = response.body().getData();
+                    if (histories != null && !histories.isEmpty()) {
+                        // 이전 대화 표시
+                        for (ChatHistoryResponse history : histories) {
+                            chatAdapter.addMessage(new ChatMessage(history.getUserMessage(), true));
+                            chatAdapter.addMessage(new ChatMessage(history.getAiResponse(), false));
+                        }
+                        rvChatMessages.scrollToPosition(chatAdapter.getItemCount() - 1);
+                    } else {
+                        // 대화 기록이 없으면 인사 메시지
+                        showWelcomeMessage();
+                    }
+                } else {
+                    showWelcomeMessage();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<List<ChatHistoryResponse>>> call, Throwable t) {
+                showWelcomeMessage();
+            }
+        });
+    }
+
+    private void showWelcomeMessage() {
+        chatAdapter.addMessage(new ChatMessage(
+                "안녕하세요! 저는 당신의 AI 영양사입니다. 🥗\n\n" +
+                "식단, 영양, 건강에 대해 무엇이든 물어보세요!\n" +
+                "당신의 식사 기록과 프로필을 바탕으로 맞춤 조언을 드릴게요.", false));
     }
 
     private void sendMessage() {
