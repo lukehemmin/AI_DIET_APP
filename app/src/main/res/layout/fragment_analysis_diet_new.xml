@@ -89,9 +89,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_md"
                     android:text="운동 플랜을 불러오는 중..."
-                    android:textColor="@color/gray_text"
-                    android:textSize="15sp"
-                    android:lineSpacingExtra="6dp" />
+                    android:textColor="@color/gray_subtext"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="4dp" />
 
                 <TextView
                     android:id="@+id/txt_exercise_cooldown"
@@ -180,9 +180,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_md"
                     android:text="레시피를 불러오는 중..."
-                    android:textColor="@color/gray_text"
-                    android:textSize="15sp"
-                    android:lineSpacingExtra="6dp" />
+                    android:textColor="@color/gray_subtext"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="4dp" />
 
                 <TextView
                     android:id="@+id/txt_recipe_cooldown"
@@ -246,40 +246,22 @@
                     android:inputType="text"
                     android:maxLines="2" />
 
-                <LinearLayout
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_generate_fridge_recipe"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="@dimen/spacing_md">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_generate_fridge_recipe"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="48dp"
-                        android:text="나만의 레시피 생성하기"
-                        android:textColor="@color/white"
-                        android:textSize="14sp"
-                        app:backgroundTint="@color/primary_blue"
-                        app:cornerRadius="12dp" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_recipe_history"
-                        android:layout_width="wrap_content"
-                        android:layout_height="48dp"
-                        android:layout_marginStart="@dimen/spacing_sm"
-                        android:text="📜"
-                        android:textSize="18sp"
-                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                        app:strokeColor="@color/gray_border"
-                        app:cornerRadius="12dp" />
-                </LinearLayout>
+                    android:layout_height="48dp"
+                    android:layout_marginTop="@dimen/spacing_md"
+                    android:text="나만의 레시피 생성하기"
+                    android:textColor="@color/white"
+                    android:textSize="15sp"
+                    app:backgroundTint="@color/primary_blue"
+                    app:cornerRadius="12dp" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_sm"
-                    android:text="재료를 입력하고 버튼을 누르면 AI가 맞춤 레시피를 만들어드려요! 📜로 이전 레시피 보기"
+                    android:text="재료를 입력하고 버튼을 누르면 AI가 맞춤 레시피를 만들어드려요!"
                     android:textColor="@color/gray_50"
                     android:textSize="12sp"
                     android:gravity="center" />
@@ -290,8 +272,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_md"
                     android:textColor="@color/gray_text"
-                    android:textSize="15sp"
-                    android:lineSpacingExtra="6dp"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="4dp"
                     android:visibility="gone" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -607,13 +589,16 @@
                     android:textColor="@color/gray_subtext"
                     android:textSize="12sp" />
 
+                <!-- 식사 시간 테이블 (7일) -->
                 <GridLayout
                     android:id="@+id/grid_meal_time"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_sm"
                     android:columnCount="7"
-                    android:rowCount="3" />
+                    android:rowCount="3">
+                    <!-- 동적으로 채워짐 -->
+                </GridLayout>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>

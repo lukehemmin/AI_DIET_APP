@@ -139,6 +139,18 @@ public interface ApiService {
     @POST("api/ai-analysis/fridge-recipe")
     Call<ApiResponse<com.lukehemmin.ai_diet_app.data.model.AiAnalysisResponse>> generateFridgeRecipe(@Body java.util.Map<String, String> request);
 
+    // 최근 냉장고 레시피 조회
+    @GET("api/ai-analysis/fridge-recipe/latest")
+    Call<ApiResponse<com.lukehemmin.ai_diet_app.data.model.FridgeRecipeHistoryResponse>> getLatestFridgeRecipe();
+
+    // 냉장고 레시피 히스토리 목록
+    @GET("api/ai-analysis/fridge-recipe/history")
+    Call<ApiResponse<java.util.List<com.lukehemmin.ai_diet_app.data.model.FridgeRecipeHistoryResponse>>> getFridgeRecipeHistory();
+
+    // AI 하루 식단 계획 생성
+    @POST("api/ai-analysis/daily-meal-plan")
+    Call<ApiResponse<com.lukehemmin.ai_diet_app.data.model.AiAnalysisResponse>> generateDailyMealPlan(@Body java.util.Map<String, String> request);
+
     // AI Analysis Preload (백그라운드 캐시 갱신)
     @POST("api/ai-analysis/preload")
     Call<ApiResponse<String>> preloadAiCache();

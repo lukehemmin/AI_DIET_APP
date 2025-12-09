@@ -14,6 +14,10 @@ java {
     }
 }
 
+springBoot {
+    mainClass = 'com.lukehemmin.dodietapi.DoDietApiApplication'
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor

@@ -2,6 +2,7 @@ package com.lukehemmin.dodietapi.controller;
 
 import com.lukehemmin.dodietapi.dto.response.AiAnalysisResponse;
 import com.lukehemmin.dodietapi.dto.response.ApiResponse;
+import com.lukehemmin.dodietapi.dto.response.FridgeRecipeHistoryResponse;
 import com.lukehemmin.dodietapi.entity.AiAnalysisType;
 import com.lukehemmin.dodietapi.entity.User;
 import com.lukehemmin.dodietapi.repository.UserRepository;
@@ -12,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -103,6 +105,20 @@ public class AiAnalysisController {
     }
     
     /**
+     * AI 하루 식단 계획 생성
+     */
+    @PostMapping("/daily-meal-plan")
+    public ResponseEntity<ApiResponse<AiAnalysisResponse>> generateDailyMealPlan(
+            Authentication authentication,
+            @RequestBody Map<String, String> request) {
+        User user = getUser(authentication);
+        String preference = request.getOrDefault("preference", "균형 잡힌 하루 식단");
+        
+        AiAnalysisResponse response = aiAnalysisService.generateDailyMealPlan(user, preference);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
      * 캐시 프리로드 (백그라운드에서 호출)
      * 앱 시작 시 미리 캐시를 준비해둠
      */
@@ -122,6 +138,27 @@ public class AiAnalysisController {
         }).start();
         
         return ResponseEntity.ok(ApiResponse.success("캐시 프리로드 시작"));
+    }
+
+    /**
+     * 최근 냉장고 레시피 조회 (앱 시작 시)
+     */
+    @GetMapping("/fridge-recipe/latest")
+    public ResponseEntity<ApiResponse<FridgeRecipeHistoryResponse>> getLatestFridgeRecipe(Authentication authentication) {
+        User user = getUser(authentication);
+        return aiAnalysisService.getLatestFridgeRecipe(user)
+                .map(response -> ResponseEntity.ok(ApiResponse.success(response)))
+                .orElse(ResponseEntity.ok(ApiResponse.success(null)));
+    }
+    
+    /**
+     * 냉장고 레시피 히스토리 목록 조회
+     */
+    @GetMapping("/fridge-recipe/history")
+    public ResponseEntity<ApiResponse<List<FridgeRecipeHistoryResponse>>> getFridgeRecipeHistory(Authentication authentication) {
+        User user = getUser(authentication);
+        List<FridgeRecipeHistoryResponse> history = aiAnalysisService.getFridgeRecipeHistory(user);
+        return ResponseEntity.ok(ApiResponse.success(history));
     }
 
     private User getUser(Authentication authentication) {

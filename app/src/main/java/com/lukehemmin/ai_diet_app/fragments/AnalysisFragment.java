@@ -39,10 +39,10 @@ public class AnalysisFragment extends Fragment {
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             switch (position) {
                 case 0:
-                    tab.setText("식단분석");
+                    tab.setText("AI 식단분석");
                     break;
                 case 1:
-                    tab.setText("AI 식단 플래너");
+                    tab.setText("AI 식단 계획");
                     break;
                 case 2:
                     tab.setText("챌린지 및 업적");

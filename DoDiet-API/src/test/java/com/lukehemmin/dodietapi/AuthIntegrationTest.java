@@ -6,6 +6,8 @@ import com.lukehemmin.dodietapi.entity.ActivityLevel;
 import com.lukehemmin.dodietapi.entity.Gender;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.time.LocalDate;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -34,7 +36,7 @@ class AuthIntegrationTest {
         
         SignupRequest.ProfileRequest profile = new SignupRequest.ProfileRequest();
         profile.setGender(Gender.MALE);
-        profile.setAge(30);
+        profile.setBirthDate(LocalDate.of(1994, 1, 1));  // 30세에 해당하는 생년월일
         profile.setHeight(180.0);
         profile.setWeight(75.0);
         profile.setActivityLevel(ActivityLevel.MODERATE);

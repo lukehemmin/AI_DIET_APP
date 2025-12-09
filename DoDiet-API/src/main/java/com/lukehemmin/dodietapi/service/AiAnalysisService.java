@@ -1,11 +1,14 @@
 package com.lukehemmin.dodietapi.service;
 
 import com.lukehemmin.dodietapi.dto.response.AiAnalysisResponse;
+import com.lukehemmin.dodietapi.dto.response.FridgeRecipeHistoryResponse;
 import com.lukehemmin.dodietapi.entity.AiAnalysisCache;
 import com.lukehemmin.dodietapi.entity.AiAnalysisType;
+import com.lukehemmin.dodietapi.entity.FridgeRecipeHistory;
 import com.lukehemmin.dodietapi.entity.Meal;
 import com.lukehemmin.dodietapi.entity.User;
 import com.lukehemmin.dodietapi.repository.AiAnalysisCacheRepository;
+import com.lukehemmin.dodietapi.repository.FridgeRecipeHistoryRepository;
 import com.lukehemmin.dodietapi.repository.MealRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,11 +27,12 @@ import java.util.stream.Collectors;
 public class AiAnalysisService {
 
     private final AiAnalysisCacheRepository cacheRepository;
+    private final FridgeRecipeHistoryRepository fridgeRecipeHistoryRepository;
     private final MealRepository mealRepository;
     private final GeminiService geminiService;
 
-    private static final int COOLDOWN_MINUTES = 30;
-    private static final int CACHE_EXPIRY_DAYS = 7;  // 캐시 만료 기간 (일)
+    private static final int COOLDOWN_MINUTES = 60;      // 새로고침 쿨다운 1시간
+    private static final int CACHE_EXPIRY_DAYS = 14;     // 캐시 만료 기간 2주
 
     /**
      * 캐시된 AI 분석 결과 가져오기 (없거나 오래되면 자동 생성)
@@ -113,6 +117,25 @@ public class AiAnalysisService {
     }
 
     /**
+     * AI 하루 식단 계획 생성
+     */
+    @Transactional
+    public AiAnalysisResponse generateDailyMealPlan(User user, String preference) {
+        String prompt = buildDailyMealPlanPrompt(user, preference);
+        String content = geminiService.chat(prompt);
+        
+        // 하루 식단 계획은 캐시하지 않고 바로 반환
+        return AiAnalysisResponse.builder()
+                .analysisType(AiAnalysisType.DAILY_MEAL_PLAN)
+                .content(content)
+                .generatedAt(LocalDateTime.now())
+                .canRefresh(true)
+                .remainingCooldownSeconds(0)
+                .needsUpdate(false)
+                .build();
+    }
+
+    /**
      * 냉장고 파먹기 레시피 생성 (재료 기반)
      */
     @Transactional
@@ -120,7 +143,7 @@ public class AiAnalysisService {
         String prompt = buildFridgeRecipePrompt(user, ingredients);
         String content = geminiService.chat(prompt);
         
-        // 냉장고 레시피는 매번 새로 생성하므로 캐시하지 않음 (또는 짧은 캐시)
+        // 최신 레시피 캐시 업데이트
         AiAnalysisCache cache = cacheRepository.findByUserAndAnalysisType(user, AiAnalysisType.FRIDGE_RECIPE)
                 .orElse(AiAnalysisCache.builder()
                         .user(user)
@@ -135,7 +158,36 @@ public class AiAnalysisService {
         
         cacheRepository.save(cache);
         
+        // 히스토리에도 저장
+        FridgeRecipeHistory history = FridgeRecipeHistory.builder()
+                .user(user)
+                .ingredients(ingredients)
+                .content(content)
+                .createdAt(LocalDateTime.now())
+                .build();
+        fridgeRecipeHistoryRepository.save(history);
+        
         return AiAnalysisResponse.from(cache, false);
+    }
+    
+    /**
+     * 최근 냉장고 레시피 조회 (앱 시작 시 표시용)
+     */
+    @Transactional(readOnly = true)
+    public Optional<FridgeRecipeHistoryResponse> getLatestFridgeRecipe(User user) {
+        return fridgeRecipeHistoryRepository.findTopByUserOrderByCreatedAtDesc(user)
+                .map(FridgeRecipeHistoryResponse::from);
+    }
+    
+    /**
+     * 냉장고 레시피 히스토리 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public List<FridgeRecipeHistoryResponse> getFridgeRecipeHistory(User user) {
+        return fridgeRecipeHistoryRepository.findByUserOrderByCreatedAtDesc(user)
+                .stream()
+                .map(FridgeRecipeHistoryResponse::from)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -196,40 +248,18 @@ public class AiAnalysisService {
         switch (type) {
             case WEEKLY_EXERCISE_PLAN:
                 return String.format("""
-                    당신은 전문 피트니스 코치입니다. 다음 사용자 정보와 최근 1주일 식단을 분석하여 맞춤형 주간 운동 플랜을 제안해주세요.
-                    
-                    [사용자 정보]
-                    %s
-                    
-                    [최근 1주일 식단]
-                    %s
-                    
-                    다음 형식으로 간단하게 답변해주세요:
-                    1. 이번 주 운동 목표 (1줄)
-                    2. 추천 운동 (3-4개, 각각 운동명과 간단한 설명)
-                    3. 주의사항 (1-2줄)
-                    
-                    한국어로 답변하고, 마크다운 형식은 사용하지 마세요.
+                    피트니스 코치로서 맞춤 운동 플랜 제안.
+                    [사용자] %s
+                    [식단요약] %s
+                    형식: 1.목표(1줄) 2.추천운동(3개) 3.주의사항(1줄). 한국어, 간결하게.
                     """, userInfo, mealSummary);
 
             case CUSTOM_RECIPE:
                 return String.format("""
-                    당신은 전문 영양사입니다. 다음 사용자 정보와 최근 1주일 식단을 분석하여 맞춤형 레시피를 추천해주세요.
-                    
-                    [사용자 정보]
-                    %s
-                    
-                    [최근 1주일 식단]
-                    %s
-                    
-                    부족한 영양소를 보충할 수 있는 레시피 1개를 추천해주세요.
-                    다음 형식으로 답변해주세요:
-                    - 요리 이름
-                    - 필요 재료 (간단히)
-                    - 예상 영양 정보 (칼로리, 단백질, 탄수화물, 지방)
-                    - 추천 이유 (1-2줄)
-                    
-                    한국어로 답변하고, 마크다운 형식은 사용하지 마세요.
+                    영양사로서 부족 영양소 보충 레시피 1개 추천.
+                    [사용자] %s
+                    [식단요약] %s
+                    형식: 요리명, 재료, 영양정보, 추천이유(1줄). 한국어, 간결하게.
                     """, userInfo, mealSummary);
 
             default:
@@ -237,76 +267,57 @@ public class AiAnalysisService {
         }
     }
 
+    private String buildDailyMealPlanPrompt(User user, String preference) {
+        String userInfo = buildUserInfo(user);
+        
+        return String.format("""
+            영양사로서 하루 식단 제안.
+            [사용자] %s
+            [선호] %s
+            형식: 🌅아침(메뉴,칼로리) ☀️점심 🌙저녁 🍎간식 📊총칼로리 💡팁(1줄). 한국어.
+            """, userInfo, preference);
+    }
+
     private String buildFridgeRecipePrompt(User user, String ingredients) {
         String userInfo = buildUserInfo(user);
         
         return String.format("""
-            당신은 전문 요리사입니다. 사용자가 가지고 있는 재료로 만들 수 있는 건강한 레시피를 추천해주세요.
-            
-            [사용자 정보]
-            %s
-            
-            [가지고 있는 재료]
-            %s
-            
-            다음 형식으로 레시피 1개를 추천해주세요:
-            - 요리 이름
-            - 필요 재료 및 분량
-            - 간단한 조리 방법 (3-5단계)
-            - 예상 영양 정보
-            - 조리 팁 (선택)
-            
-            한국어로 답변하고, 마크다운 형식은 사용하지 마세요.
+            요리사로서 재료 활용 레시피 1개 추천.
+            [사용자] %s
+            [재료] %s
+            형식: 요리명, 재료분량, 조리법(3단계), 영양정보. 한국어, 간결하게.
             """, userInfo, ingredients);
     }
 
     private String buildMealSummary(List<Meal> meals) {
         if (meals.isEmpty()) {
-            return "기록된 식단이 없습니다.";
+            return "식단없음";
         }
 
         double totalKcal = meals.stream().mapToDouble(m -> m.getKcal() != null ? m.getKcal() : 0).sum();
         double totalProtein = meals.stream().mapToDouble(m -> m.getProtein() != null ? m.getProtein() : 0).sum();
         double totalCarbs = meals.stream().mapToDouble(m -> m.getCarbs() != null ? m.getCarbs() : 0).sum();
         double totalFat = meals.stream().mapToDouble(m -> m.getFat() != null ? m.getFat() : 0).sum();
-        int daysWithMeals = (int) meals.stream().map(Meal::getDate).distinct().count();
+        int days = (int) meals.stream().map(Meal::getDate).distinct().count();
 
-        String foodItems = meals.stream()
+        String foods = meals.stream()
                 .map(Meal::getFoodItem)
                 .distinct()
-                .limit(10)
-                .collect(Collectors.joining(", "));
+                .limit(5)  // 5개로 제한
+                .collect(Collectors.joining(","));
 
-        return String.format("""
-            - 기록 일수: %d일
-            - 총 칼로리: %.0f kcal (일평균: %.0f kcal)
-            - 총 단백질: %.1fg (일평균: %.1fg)
-            - 총 탄수화물: %.1fg
-            - 총 지방: %.1fg
-            - 주요 음식: %s
-            """, 
-            daysWithMeals,
-            totalKcal, daysWithMeals > 0 ? totalKcal / daysWithMeals : 0,
-            totalProtein, daysWithMeals > 0 ? totalProtein / daysWithMeals : 0,
-            totalCarbs,
-            totalFat,
-            foodItems);
+        return String.format("%d일간 %.0fkcal(일%.0f) 단%.0fg 탄%.0fg 지%.0fg [%s]", 
+            days, totalKcal, days > 0 ? totalKcal / days : 0,
+            totalProtein, totalCarbs, totalFat, foods);
     }
 
     private String buildUserInfo(User user) {
-        return String.format("""
-            - 이름: %s
-            - 성별: %s
-            - 나이: %d세
-            - 키: %.1fcm
-            - 몸무게: %.1fkg
-            - 활동량: %s
-            """,
+        return String.format("%s %s %d세 %.0fcm %.0fkg %s",
             user.getName(),
-            user.getGender() != null ? user.getGender().name() : "미설정",
+            user.getGender() != null ? user.getGender().name() : "-",
             user.getAge() != null ? user.getAge() : 0,
             user.getHeight() != null ? user.getHeight() : 0,
             user.getWeight() != null ? user.getWeight() : 0,
-            user.getActivityLevel() != null ? user.getActivityLevel().name() : "미설정");
+            user.getActivityLevel() != null ? user.getActivityLevel().name() : "-");
     }
 }
