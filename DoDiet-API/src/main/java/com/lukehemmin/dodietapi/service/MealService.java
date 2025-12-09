@@ -19,6 +19,7 @@ public class MealService {
 
     private final MealRepository mealRepository;
     private final BadgeService badgeService;
+    private final AiAnalysisService aiAnalysisService;
 
     @Transactional
     public List<MealResponse> createMeals(User user, MealCreateRequest request) {
@@ -44,6 +45,9 @@ public class MealService {
         
         // Check badges
         badgeService.checkMealBadges(user);
+        
+        // 식단 추가 시 AI 분석 캐시 무효화 (새로고침 가능하게)
+        aiAnalysisService.invalidateCache(user);
         
         return savedMeals.stream()
                 .map(MealResponse::from)

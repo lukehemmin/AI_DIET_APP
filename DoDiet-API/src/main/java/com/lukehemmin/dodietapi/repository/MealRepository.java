@@ -12,5 +12,6 @@ import java.util.UUID;
 public interface MealRepository extends JpaRepository<Meal, UUID> {
     List<Meal> findByUserIdAndDate(UUID userId, LocalDate date);
     List<Meal> findByUserIdAndDateBetween(UUID userId, LocalDate startDate, LocalDate endDate);
+    List<Meal> findByUserAndDateBetween(com.lukehemmin.dodietapi.entity.User user, LocalDate startDate, LocalDate endDate);
     long countByUserId(UUID userId);
 }

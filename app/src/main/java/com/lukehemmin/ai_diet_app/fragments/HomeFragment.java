@@ -176,7 +176,28 @@ public class HomeFragment extends Fragment {
         setupPieChart();
         updatePieChart(0, 0, 0);
         
+        // 백그라운드에서 AI 분석 캐시 프리로드
+        preloadAiCache();
+        
         return view;
+    }
+    
+    /**
+     * AI 분석 캐시를 백그라운드에서 미리 로드
+     * 분석 화면 진입 시 즉시 표시할 수 있도록 준비
+     */
+    private void preloadAiCache() {
+        RetrofitClient.getApiService().preloadAiCache().enqueue(new Callback<ApiResponse<String>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<String>> call, Response<ApiResponse<String>> response) {
+                // 성공 여부 상관없이 무시 (백그라운드 작업)
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<String>> call, Throwable t) {
+                // 실패해도 무시 (백그라운드 작업)
+            }
+        });
     }
 
     private void initializeViews(View view) {
@@ -365,6 +386,8 @@ public class HomeFragment extends Fragment {
     private AlertDialog loadingDialog;
 
     private void showLoadingDialog() {
+        if (!isAdded() || getContext() == null) return;
+        
         if (loadingDialog == null) {
             MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
             builder.setCancelable(false);
@@ -379,7 +402,29 @@ public class HomeFragment extends Fragment {
 
     private void dismissLoadingDialog() {
         if (loadingDialog != null && loadingDialog.isShowing()) {
-            loadingDialog.dismiss();
+            // Fragment가 attached 상태이고 Activity가 finishing이 아닐 때만 dismiss
+            if (isAdded() && getActivity() != null && !getActivity().isFinishing()) {
+                try {
+                    loadingDialog.dismiss();
+                } catch (IllegalArgumentException e) {
+                    // View not attached to window manager - ignore
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Dialog 정리
+        if (loadingDialog != null) {
+            try {
+                if (loadingDialog.isShowing()) {
+                    loadingDialog.dismiss();
+                }
+            } catch (Exception ignored) {
+            }
+            loadingDialog = null;
         }
     }
 

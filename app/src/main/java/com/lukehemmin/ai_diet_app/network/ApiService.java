@@ -122,4 +122,24 @@ public interface ApiService {
 
     @POST("api/water/remove")
     Call<ApiResponse<java.util.Map<String, Object>>> removeWaterGlass(@retrofit2.http.Query("date") String date);
+
+    // AI Analysis
+    @GET("api/ai-analysis/exercise-plan")
+    Call<ApiResponse<com.lukehemmin.ai_diet_app.data.model.AiAnalysisResponse>> getExercisePlan();
+
+    @POST("api/ai-analysis/exercise-plan/refresh")
+    Call<ApiResponse<com.lukehemmin.ai_diet_app.data.model.AiAnalysisResponse>> refreshExercisePlan(@retrofit2.http.Query("force") boolean force);
+
+    @GET("api/ai-analysis/custom-recipe")
+    Call<ApiResponse<com.lukehemmin.ai_diet_app.data.model.AiAnalysisResponse>> getCustomRecipe();
+
+    @POST("api/ai-analysis/custom-recipe/refresh")
+    Call<ApiResponse<com.lukehemmin.ai_diet_app.data.model.AiAnalysisResponse>> refreshCustomRecipe(@retrofit2.http.Query("force") boolean force);
+
+    @POST("api/ai-analysis/fridge-recipe")
+    Call<ApiResponse<com.lukehemmin.ai_diet_app.data.model.AiAnalysisResponse>> generateFridgeRecipe(@Body java.util.Map<String, String> request);
+
+    // AI Analysis Preload (백그라운드 캐시 갱신)
+    @POST("api/ai-analysis/preload")
+    Call<ApiResponse<String>> preloadAiCache();
 }
