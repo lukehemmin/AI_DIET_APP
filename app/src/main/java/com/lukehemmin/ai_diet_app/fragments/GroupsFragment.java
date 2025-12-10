@@ -114,7 +114,8 @@ public class GroupsFragment extends Fragment {
         GroupDetailFragment detailFragment = GroupDetailFragment.newInstance(group.getId(), group.getName());
         
         getParentFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, detailFragment)
+                .hide(this)  // 현재 프래그먼트 숨기기 (replace 대신)
+                .add(R.id.fragment_container, detailFragment)
                 .addToBackStack(null)
                 .commit();
     }

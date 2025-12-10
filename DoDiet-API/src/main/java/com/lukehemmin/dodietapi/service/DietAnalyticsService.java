@@ -2,10 +2,14 @@ package com.lukehemmin.dodietapi.service;
 
 import com.lukehemmin.dodietapi.dto.response.DietAnalyticsResponse;
 import com.lukehemmin.dodietapi.dto.response.DietAnalyticsResponse.*;
+import com.lukehemmin.dodietapi.dto.response.WeeklyReportResponse;
+import com.lukehemmin.dodietapi.entity.ChallengeStatus;
 import com.lukehemmin.dodietapi.entity.Meal;
 import com.lukehemmin.dodietapi.entity.MealTime;
 import com.lukehemmin.dodietapi.entity.User;
+import com.lukehemmin.dodietapi.entity.UserChallengeProgress;
 import com.lukehemmin.dodietapi.repository.MealRepository;
+import com.lukehemmin.dodietapi.repository.UserChallengeProgressRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -23,6 +27,7 @@ import java.util.stream.Collectors;
 public class DietAnalyticsService {
 
     private final MealRepository mealRepository;
+    private final UserChallengeProgressRepository challengeProgressRepository;
 
     /**
      * 전체 분석 데이터 조회
@@ -346,5 +351,123 @@ public class DietAnalyticsService {
     private double calculateTargetFat(User user) {
         // 전체 칼로리의 25%를 지방에서 (1g = 9kcal)
         return calculateTargetCalories(user) * 0.25 / 9;
+    }
+    
+    // ========== 주간 건강 리포트 ==========
+    
+    /**
+     * 주간 건강 리포트 데이터 조회
+     */
+    @Transactional(readOnly = true)
+    public WeeklyReportResponse getWeeklyReport(User user) {
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(6); // 최근 7일
+        
+        List<Meal> meals = mealRepository.findByUserAndDateBetweenOrderByDateDesc(user, startDate, endDate);
+        
+        // 기록된 일수
+        long recordedDays = meals.stream().map(Meal::getDate).distinct().count();
+        
+        // 총 칼로리 및 평균 칼로리
+        double totalCalories = meals.stream()
+                .mapToDouble(m -> m.getKcal() != null ? m.getKcal() : 0)
+                .sum();
+        double avgCalories = recordedDays > 0 ? totalCalories / recordedDays : 0;
+        
+        // AI 주간 총평
+        String aiSummary = buildWeeklySummary(meals, recordedDays, avgCalories, calculateTargetCalories(user));
+        
+        // 가장 많이 먹은 음식 TOP 3
+        List<WeeklyReportResponse.TopFood> topFoods = buildTopFoods(meals);
+        
+        // 완료한 챌린지
+        List<UserChallengeProgress> completedChallenges = challengeProgressRepository.findByUser(user)
+                .stream()
+                .filter(p -> p.getStatus() == ChallengeStatus.COMPLETED)
+                .filter(p -> p.getCompletedAt() != null && 
+                        p.getCompletedAt().toLocalDate().isAfter(startDate.minusDays(1)))
+                .toList();
+        
+        List<WeeklyReportResponse.CompletedChallenge> challengeList = completedChallenges.stream()
+                .map(p -> WeeklyReportResponse.CompletedChallenge.builder()
+                        .id(p.getChallenge().getId())
+                        .name(p.getChallenge().getTitle())
+                        .completedAt(p.getCompletedAt() != null ? 
+                                p.getCompletedAt().format(DateTimeFormatter.ofPattern("M월 d일")) : null)
+                        .build())
+                .collect(Collectors.toList());
+        
+        return WeeklyReportResponse.builder()
+                .aiSummary(aiSummary)
+                .averageCalories(Math.round(avgCalories))
+                .totalCalories(Math.round(totalCalories))
+                .recordedDays((int) recordedDays)
+                .topFoods(topFoods)
+                .completedChallenges(challengeList)
+                .completedChallengeCount(challengeList.size())
+                .build();
+    }
+    
+    /**
+     * 주간 AI 총평 생성
+     */
+    private String buildWeeklySummary(List<Meal> meals, long recordedDays, double avgCalories, double targetCalories) {
+        if (meals.isEmpty()) {
+            return "이번 주는 식단 기록이 없어요. 다음 주에는 꾸준히 기록해보세요! 💪";
+        }
+        
+        if (recordedDays < 3) {
+            return "이번 주 " + recordedDays + "일 기록하셨네요! 더 꾸준히 기록하면 정확한 분석을 받으실 수 있어요.";
+        }
+        
+        StringBuilder summary = new StringBuilder();
+        
+        // 칼로리 분석
+        double ratio = avgCalories / targetCalories;
+        if (ratio >= 0.8 && ratio <= 1.2) {
+            summary.append("이번 주 칼로리 섭취가 적정 수준이에요! 👏 ");
+        } else if (ratio < 0.8) {
+            summary.append("이번 주 칼로리 섭취가 다소 부족했어요. 충분히 드세요! ");
+        } else {
+            summary.append("이번 주 칼로리 섭취가 조금 많았어요. 조절해보세요! ");
+        }
+        
+        // 기록 일수에 따른 격려
+        if (recordedDays >= 6) {
+            summary.append("거의 매일 기록하셨네요! 정말 대단해요! 🌟");
+        } else if (recordedDays >= 4) {
+            summary.append("꾸준히 기록하고 계세요. 좋은 습관이에요! ✨");
+        } else {
+            summary.append("조금 더 자주 기록하면 건강 관리에 도움이 돼요!");
+        }
+        
+        return summary.toString();
+    }
+    
+    /**
+     * 가장 많이 먹은 음식 TOP 3
+     */
+    private List<WeeklyReportResponse.TopFood> buildTopFoods(List<Meal> meals) {
+        if (meals.isEmpty()) {
+            return List.of();
+        }
+        
+        // 음식명별 횟수 집계
+        Map<String, Long> foodCounts = meals.stream()
+                .filter(m -> m.getFoodItem() != null && !m.getFoodItem().isBlank())
+                .collect(Collectors.groupingBy(
+                        m -> m.getFoodItem().trim(),
+                        Collectors.counting()
+                ));
+        
+        // 상위 3개 추출
+        return foodCounts.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(3)
+                .map(e -> WeeklyReportResponse.TopFood.builder()
+                        .foodName(e.getKey())
+                        .count(e.getValue().intValue())
+                        .build())
+                .toList();
     }
 }

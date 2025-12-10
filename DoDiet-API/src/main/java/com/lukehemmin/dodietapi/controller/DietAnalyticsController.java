@@ -2,6 +2,7 @@ package com.lukehemmin.dodietapi.controller;
 
 import com.lukehemmin.dodietapi.dto.response.ApiResponse;
 import com.lukehemmin.dodietapi.dto.response.DietAnalyticsResponse;
+import com.lukehemmin.dodietapi.dto.response.WeeklyReportResponse;
 import com.lukehemmin.dodietapi.entity.User;
 import com.lukehemmin.dodietapi.repository.UserRepository;
 import com.lukehemmin.dodietapi.service.DietAnalyticsService;
@@ -31,6 +32,19 @@ public class DietAnalyticsController {
         
         User user = getUser(authentication);
         DietAnalyticsResponse response = dietAnalyticsService.getAnalytics(user, days);
+        
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+    
+    /**
+     * 주간 건강 리포트 조회
+     */
+    @GetMapping("/weekly-report")
+    public ResponseEntity<ApiResponse<WeeklyReportResponse>> getWeeklyReport(
+            Authentication authentication) {
+        
+        User user = getUser(authentication);
+        WeeklyReportResponse response = dietAnalyticsService.getWeeklyReport(user);
         
         return ResponseEntity.ok(ApiResponse.success(response));
     }

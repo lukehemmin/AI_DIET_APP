@@ -50,6 +50,7 @@ import com.lukehemmin.ai_diet_app.data.model.MealAnalysisResponse;
 import com.lukehemmin.ai_diet_app.data.model.MealAnalysisResult;
 import com.lukehemmin.ai_diet_app.data.model.MealCreateRequest;
 import com.lukehemmin.ai_diet_app.data.model.MealResponse;
+import com.lukehemmin.ai_diet_app.data.model.UserProfile;
 import com.lukehemmin.ai_diet_app.network.ApiService;
 import com.lukehemmin.ai_diet_app.network.RetrofitClient;
 import com.lukehemmin.ai_diet_app.utils.FileUtils;
@@ -96,6 +97,7 @@ public class HomeFragment extends Fragment {
     private PieChart pieChart;
     private boolean isFabOpen = false;
     private Calendar currentSelectedDate = Calendar.getInstance();
+    private int goalIntake = 2000; // 기본값, 서버에서 로드됨
 
     // Permission Launchers
     private final ActivityResultLauncher<String> requestCameraPermissionLauncher = registerForActivityResult(
@@ -847,7 +849,7 @@ public class HomeFragment extends Fragment {
     private void loadInitialData() {
         // Initialize with default values
         txtCurrentKcal.setText("0");
-        txtGoalKcal.setText("/ 2,662 kcal");
+        txtGoalKcal.setText(String.format(Locale.US, "/ %,d kcal", goalIntake));
         progressCalorie.setProgress(0);
         
         txtCarbsLegend.setText("탄수화물 (0%)");
@@ -863,12 +865,44 @@ public class HomeFragment extends Fragment {
         
         // Show empty state initially
         showEmptyState(true);
-        updateCalorieProgress(0, 2662);
+        updateCalorieProgress(0, goalIntake);
+        
+        // Load user profile to get goal intake
+        loadUserProfile();
         
         // Load meals from server
         loadMealsForDate(currentSelectedDate);
         // Load water intake from server
         loadWaterIntakeForDate(currentSelectedDate);
+    }
+    
+    private void loadUserProfile() {
+        apiService.getProfile().enqueue(new Callback<ApiResponse<UserProfile>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<UserProfile>> call, Response<ApiResponse<UserProfile>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    UserProfile profile = response.body().getData();
+                    if (profile != null && profile.getGoalIntake() != null) {
+                        goalIntake = profile.getGoalIntake().intValue();
+                        // Update UI with new goal
+                        txtGoalKcal.setText(String.format(Locale.US, "/ %,d kcal", goalIntake));
+                        // Re-calculate progress with current calories
+                        String currentKcalStr = txtCurrentKcal.getText().toString().replace(",", "");
+                        try {
+                            int currentKcal = Integer.parseInt(currentKcalStr);
+                            updateCalorieProgress(currentKcal, goalIntake);
+                        } catch (NumberFormatException e) {
+                            updateCalorieProgress(0, goalIntake);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<UserProfile>> call, Throwable t) {
+                // Use default goalIntake if profile load fails
+            }
+        });
     }
 
     private void loadWaterIntakeForDate(Calendar date) {
@@ -1074,7 +1108,7 @@ public class HomeFragment extends Fragment {
                     
                     if (mealsList == null || mealsList.isEmpty()) {
                         showEmptyState(true);
-                        updateCalorieProgress(0, 2662);
+                        updateCalorieProgress(0, goalIntake);
                         txtCurrentKcal.setText("0");
                         updatePieChart(0, 0, 0);
                         txtCarbsLegend.setText("탄수화물 (0%)");
@@ -1153,7 +1187,7 @@ public class HomeFragment extends Fragment {
                         
                         // Update UI
                         txtCurrentKcal.setText(String.format(Locale.US, "%,.0f", totalKcal));
-                        updateCalorieProgress((int) totalKcal, 2662);
+                        updateCalorieProgress((int) totalKcal, goalIntake);
                         
                         // Update pie chart
                         double totalMacro = totalCarbs + totalProtein + totalFat;

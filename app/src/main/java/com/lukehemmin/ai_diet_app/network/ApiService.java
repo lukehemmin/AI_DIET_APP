@@ -18,6 +18,7 @@ import com.lukehemmin.ai_diet_app.data.model.GroupCreateRequest;
 import com.lukehemmin.ai_diet_app.data.model.GroupResponse;
 import com.lukehemmin.ai_diet_app.data.model.MealAnalysisResponse;
 import com.lukehemmin.ai_diet_app.data.model.UserChallengeResponse;
+import com.lukehemmin.ai_diet_app.data.model.WeeklyReportResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -64,6 +65,9 @@ public interface ApiService {
 
     @GET("api/members/me")
     Call<ApiResponse<UserProfile>> getProfile();
+
+    @GET("api/analytics/weekly-report")
+    Call<ApiResponse<WeeklyReportResponse>> getWeeklyReport();
 
     @retrofit2.http.PUT("api/members/me")
     Call<ApiResponse<UserProfile>> updateProfile(@Body UserProfile request);
