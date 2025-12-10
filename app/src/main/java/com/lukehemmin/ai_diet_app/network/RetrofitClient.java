@@ -21,7 +21,7 @@ public class RetrofitClient {
     
     // Android Emulator uses 10.0.2.2 to access localhost of the host machine
     // For physical device, use your machine's local IP address (e.g., 192.168.0.x)
-    private static final String BASE_URL = "http://api.dodiet.lukehemmin.com/";
+    private static final String BASE_URL = "https://api.dodiet.lukehemmin.com/";
     private static Retrofit retrofit = null;
 
     public static ApiService getApiService() {
