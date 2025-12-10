@@ -45,8 +45,9 @@ public class MealController {
         // 1. Store image
         String storedFileName = storageService.store(image, "meals", user.getId().toString());
         
-        // 2. Generate full URL
+        // 2. Generate full URL (force HTTPS for production)
         String fileUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                .scheme("https")
                 .path("/uploads/")
                 .path(storedFileName)
                 .toUriString();

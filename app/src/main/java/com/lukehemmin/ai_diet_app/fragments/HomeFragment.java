@@ -28,6 +28,8 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.lukehemmin.ai_diet_app.utils.UrlUtils;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -1344,10 +1346,11 @@ public class HomeFragment extends Fragment {
                 android.util.Log.d("MealGroup", "Image URLs: " + imageUrls.toString());
                 if (!imageUrls.isEmpty()) {
                     imagesContainer.setVisibility(View.VISIBLE);
-                    android.util.Log.d("MealGroup", "Loading image: " + imageUrls.get(0));
+                    String httpsUrl = UrlUtils.ensureHttps(imageUrls.get(0));
+                    android.util.Log.d("MealGroup", "Loading image: " + httpsUrl);
                     // Load front image
                     com.bumptech.glide.Glide.with(itemView.getContext())
-                            .load(imageUrls.get(0))
+                            .load(httpsUrl)
                             .centerCrop()
                             .placeholder(R.color.gray_70)
                             .error(R.color.gray_70)
@@ -1357,7 +1360,7 @@ public class HomeFragment extends Fragment {
                     if (imageUrls.size() > 1) {
                         cardImageBack.setVisibility(View.VISIBLE);
                         com.bumptech.glide.Glide.with(itemView.getContext())
-                                .load(imageUrls.get(1))
+                                .load(UrlUtils.ensureHttps(imageUrls.get(1)))
                                 .centerCrop()
                                 .placeholder(R.color.gray_70)
                                 .error(R.color.gray_70)
@@ -1516,7 +1519,7 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void onBindViewHolder(@NonNull ImageViewHolder holder, int position) {
-            String url = imageUrls.get(position);
+            String url = UrlUtils.ensureHttps(imageUrls.get(position));
             com.bumptech.glide.Glide.with(holder.imageView.getContext())
                     .load(url)
                     .centerCrop()

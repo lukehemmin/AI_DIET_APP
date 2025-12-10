@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.lukehemmin.ai_diet_app.R;
 import com.lukehemmin.ai_diet_app.data.model.FriendResponse;
+import com.lukehemmin.ai_diet_app.utils.UrlUtils;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -89,7 +90,7 @@ public class FriendInviteAdapter extends RecyclerView.Adapter<FriendInviteAdapte
             // 프로필 이미지 로드
             if (friend.getProfileImageUrl() != null && !friend.getProfileImageUrl().isEmpty()) {
                 Glide.with(itemView.getContext())
-                        .load(friend.getProfileImageUrl())
+                        .load(UrlUtils.ensureHttps(friend.getProfileImageUrl()))
                         .placeholder(R.drawable.ic_launcher_foreground)
                         .error(R.drawable.ic_launcher_foreground)
                         .into(ivProfile);

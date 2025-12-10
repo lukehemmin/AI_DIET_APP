@@ -28,6 +28,7 @@ import com.lukehemmin.ai_diet_app.data.model.ApiResponse;
 import com.lukehemmin.ai_diet_app.data.model.UserProfile;
 import com.lukehemmin.ai_diet_app.network.ApiService;
 import com.lukehemmin.ai_diet_app.network.RetrofitClient;
+import com.lukehemmin.ai_diet_app.utils.UrlUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -186,6 +187,8 @@ public class ProfileFragment extends Fragment {
             if (!imageUrl.startsWith("http")) {
                 fullUrl = RetrofitClient.getBaseUrl(getContext()) + "uploads/" + imageUrl;
             }
+            // HTTP를 HTTPS로 변환
+            fullUrl = UrlUtils.ensureHttps(fullUrl);
             
             Glide.with(this)
                     .load(fullUrl)

@@ -26,6 +26,7 @@ import com.lukehemmin.ai_diet_app.data.model.GroupDetailResponse;
 import com.lukehemmin.ai_diet_app.data.model.GroupMemberResponse;
 import com.lukehemmin.ai_diet_app.network.ApiService;
 import com.lukehemmin.ai_diet_app.network.RetrofitClient;
+import com.lukehemmin.ai_diet_app.utils.UrlUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -327,7 +328,7 @@ public class GroupDetailFragment extends Fragment {
             // 프로필 이미지 로드
             if (member.getProfileImageUrl() != null && !member.getProfileImageUrl().isEmpty()) {
                 Glide.with(this)
-                        .load(member.getProfileImageUrl())
+                        .load(UrlUtils.ensureHttps(member.getProfileImageUrl()))
                         .placeholder(R.drawable.ic_launcher_foreground)
                         .error(R.drawable.ic_launcher_foreground)
                         .into(avatar);
